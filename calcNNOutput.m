@@ -13,7 +13,7 @@ wj=NNset.IW{h}(:,i);
 V1=V1+(wj.*(xij-cij)).^2;
 end;
 %output for hidden layer
-Y1=exp(-V1);
+Y1=-1*exp(-V1);
 X=Y1; %output of current hidden layer is input for next hidden layer
 end
 

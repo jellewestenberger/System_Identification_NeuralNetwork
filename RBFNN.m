@@ -10,13 +10,15 @@ X=[atrue, Btrue, Vtrue]; %input vector
 
 Networktype='rbf'; %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,2);     %number of inputs being used
-nrHiddenlayers=2; 
+
 nrOutput=1; 
-nrNodesHidden=[6 4];%number of nodes in the hidden layers
+nrNodesHidden=[3]; %add columns to add more hidden layers;
+nrHiddenlayers=size(nrNodesHidden,2);%number of nodes in the hidden layers
 inputrange=[min(X); max(X)]';
 
-NNset=createNNStructure(nrInput,nrHiddenlayers,nrNodesHidden,nrOutput,inputrange,Networktype);
 
+NNset=createNNStructure(nrInput,nrHiddenlayers,nrNodesHidden,nrOutput,inputrange,Networktype);
+  
 %---CHECK----
  check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
 %------------
