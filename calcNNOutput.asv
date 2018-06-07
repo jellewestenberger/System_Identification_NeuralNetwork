@@ -1,7 +1,7 @@
 function [Y2, hiddenoutput]=calcNNOutput(NNset,X)
 hiddenoutput={};
 for h=1:size(NNset.centers,2) %loop over number of hidden layers
-    hiddenoutput{h}=zeros(size(NNset.IW{h},1),size(X,2));
+    hiddenoutput{h}=zeros(size(X,2),size(NNset.IW,1));
     Nin=size(X,1);
     L_end=size(X,2);
     Nhidden=size(NNset.centers{h},1);
@@ -16,8 +16,7 @@ for h=1:size(NNset.centers,2) %loop over number of hidden layers
     end;
     %output for hidden layer
     Y1=NNset.a(:,h).*exp(-V1);
-    
-    hiddenoutput{h}(:,:)=Y1;
+    hiddenoutput{h}(:,h)=Y1;
     X=Y1; %output of current hidden layer is input for next hidden layer
 end
 

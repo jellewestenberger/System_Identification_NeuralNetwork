@@ -54,16 +54,15 @@ NNset.a=a;
 
 [Y, hiddenoutput]=calcNNOutput(NNset,X); %nice for double checking with Cm_estimated (should be exactly equal)
 
+
+for h=1:size(NNset.
+
 %% Levenberg Marquard
 %calculate dE/d Wjk   (Wjk = output weight);
+yj=hiddenoutput{1}(:,1);
 ek=Y'-Cm;
-h=1
-dEdWjk{h}=zeros(size(NNset.IW{h},1),1);
 
-for j=1:size(Wjk{h},1)
-yj=hiddenoutput{1}(j,:);    
-dEdWjk{h}(j)=sum(ek.*yj');
-end
+
 
 
 %% plotting 
