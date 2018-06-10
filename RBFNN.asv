@@ -12,7 +12,7 @@ Networktype='rbf'; %choose network type: radial basis function (rbf) or feedforw
 nrInput=size(X,2);     %number of inputs being used
 
 nrOutput=1; 
-nrNodesHidden=[100]; %add columns to add more hidden layers;
+nrNodesHidden=[4]; %add columns to add more hidden layers;
 nrHiddenlayers=size(nrNodesHidden,2);%number of nodes in the hidden layers
 inputrange=[min(X); max(X)]';
 
@@ -25,7 +25,8 @@ NNset=createNNStructure(nrInput,nrHiddenlayers,nrNodesHidden,nrOutput,inputrange
 
 X=X';
 
-%% Linear regression 
+% Nin=size(X
+%%Linear regression (new)
 k=1; %only valid for one hidden layer (for now);
 A=zeros(size(X,2),size(NNset.IW{k},1));
 for j=1:size(A,2)
@@ -33,11 +34,35 @@ for j=1:size(A,2)
     for i=1:size(X,1)
     vk=vk+(X(i,:)-NNset.centers{k}(j,i)).^2*(NNset.IW{k}(j,i))^2;
     end
-   A(:,j)=exp(-vk').*NNset.LW(j);
+   A(:,j)=exp(-vk');
 end
-a_est=inv(A'*A)*A'*Cm; %least-squared estimators 
-Cm_est=A*a_est;
-NNset.a{k}=a_est;
+a_est=inv(A'*A)*A'*Cm;
+Cm_est=A*a_
+%% Linear regression 
+%not that this is currently only valid for a 1 hidden layer network
+% Phis=zeros(size(X,2),nrNodesHidden);
+% 
+% A=zeros(size(X,2),nrNodesHidden);
+% a=zeros(nrNodesHidden,1);
+% 
+% for j=1:nrNodesHidden %node identifier 
+% 
+% eval=0;
+% for i=1:size(X,1) %input identifier (alpha, beta or V) 
+% x=X(i,:);
+% w=NNset.IW{1,1}(j,i); %input weight;
+% c=NNset.centers{1,1}(j,i); %centers
+% eval=eval+(w^2)*(x-c).^2;     %input variable for activation function (consists of sum of input weights multiplied with corresponding center differences)       
+% end
+% Phis(:,j)=exp(-eval)';
+% end
+% A(:,:)=Phis.*NNset.LW;
+% a=((A'*A)^(-1))*A'*Cm;
+% Cm_estimated=A*a;
+% NNset.a{1}=a;
+% sqrter=sum((Cm_estimated-Cm).^2);
+% %%
+% %% Creating output---
 
 
 %% Levenberg Marquard
@@ -46,7 +71,7 @@ NNset.a{k}=a_est;
 % epoch = 3;
 %  for it=1:epoch
 %     disp(it);
-[Y, hiddenoutput, Vj]=calcNNOutput(NNset,X); %nice for double checking with Cm_est (should be exactly equal)
+[Y, hiddenoutput, Vj]=calcNNOutput(NNset,X); %nice for double checking with Cm_estimated (should be exactly equal)
 
 ekq=Y'-Cm;
 
@@ -80,7 +105,7 @@ ekq=Y'-Cm;
 
 
 figure
-plot3(atrue,Btrue,Y,'.b'); 
+plot3(atrue,Btrue,Y','.b'); 
 %% plotting 
 
 % hold on
