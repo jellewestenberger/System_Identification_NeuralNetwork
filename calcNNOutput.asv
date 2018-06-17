@@ -1,4 +1,4 @@
-function outputs=calcNNOutput(NNset,X)
+function [Y2, hiddenoutput,Vj]=calcNNOutput(NNset,X,a)
 hiddenoutput={};
 Vj={};
 nrHiddenlayers=size(NNset.IW,2);
@@ -10,7 +10,7 @@ nrOutputs=[];
 yi{1}=X(:,:); %input values for all layers (before input weight)
 vj={};
 yj={};
-
+vk={};
 for k=1:nrHiddenlayers %loop over number of hidden layers
     nrNodes=[nrNodes,size(NNset.IW{k},1)];
     nrInputs=[nrInputs,size(yi{k},1)];
@@ -32,17 +32,10 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
     
     %output of current hidden layer is input for next hidden layer
 end
+yk=
 
-%output of output layer;
-vk=NNset.LW'.*yi{end};
-yk=sum(vk,1);
-
-outputs=struct();
-outputs.yi=yi;
-outputs.yk=yk;
-outputs.vj=vj;
-outputs.vk=vj;
-
+%output of output layer
+Y2=NNset.LW*Y1;
 
 % hold on
 % plot3(atrue,Btrue,Y2'-Cm,'.b');
