@@ -53,7 +53,7 @@ end
 % epoch = 3;
 %  for it=1:epoch
 %     disp(it);
-outputs=calcNNOutput(NNset,X); %nice for double checking with Cm_est (should be exactly equal)
+outputs=calcNNOutput(NNset,X); %nice for double checking with Cm_est (yl should be cm_est)
 
 % figure
 % plot3(atrue,Btrue,Y,'.b'); 
@@ -66,17 +66,22 @@ outputs=calcNNOutput(NNset,X); %nice for double checking with Cm_est (should be 
 evaltot=10;
 eta=0.000001;
 for eval=1:evaltot
+    
     close all;
-ekq=Y'-Cm;
+yk=outputs.yk;
+
+yi=outputs.yi; %yi is the same as vk from hiddenlayer before since there are no separate input and outputweights betweed hidden layer 
+
+ekq=yk'-Cm;
 Ekq=0.5*ekq.^2;
 disp('total error:');
 disp(sum(Ekq))
 mu=0.05;
 dEdyk=-ekq;
 dykdvk=ones(size(dEdyk));
-dvkdwjk=hiddenoutput{1};
+dvkdwjk=yi{k+1};
 dEdwjk=sum(dEdyk.*dykdvk.*dvkdwjk',1);
-dedwjk=-1*hiddenoutput{1};
+dedwjk=-1*yi{k+1};
 dWjk=-eta*dEdwjk;
 
 
@@ -86,10 +91,10 @@ dWjk=-eta*dEdwjk;
 % term1=(J'*J+mu*eye(size(J,2)))^(-1);
 % term1=term1*J'.*sum(Ekq);
 NNset.LW=NNset.LW+dWjk;
-[Y, hiddenoutput, Vj]=calcNNOutput(NNset,X);
+outputs=calcNNOutput(NNset,X);
 
 figure
-plot3(atrue,Btrue,Y,'.b'); 
+plot3(atrue,Btrue,yk,'.b'); 
 title(strcat('evaluation ',num2str(eval)));
 hold on
 plot3(atrue,Btrue,Cm,'.k');
