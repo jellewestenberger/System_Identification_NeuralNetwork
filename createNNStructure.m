@@ -25,8 +25,8 @@ elseif strcmp(Networktype,'rbf')
             NNset.centers{h}=zeros(nrNodesHidden(h),inputs(h));
         end
     NNset.IW{h}=ones(nrNodesHidden(h),inputs(h)); %1's for now  INPUT WEIGHTS
-    NNset.LW=ones(nrOutput,nrNodesHidden(end));%OUTPUT WEIGHTS (end because only look at last hidden layer connects to output) 
-
+    NNset.LW=ones(nrOutput,nrNodesHidden(end));%OUTPUT WEIGHTS (end because only last hidden layer connects to output) 
+    NNset.a{h}=ones(nrNodesHidden(h),1);
     end 
     NNset.name{1,1}='rbf';
 end

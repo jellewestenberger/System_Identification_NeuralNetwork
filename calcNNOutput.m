@@ -16,7 +16,7 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
     nrInputs=[nrInputs,size(yi{k},1)];
     nrOutputs=[nrOutputs, nrNodes(k)];
     vj{k}=zeros(nrNodes(k),nrMeasurements);
-    
+     dvjwij{k}=zeros(nrNodes(k),nrMeasurements);
     Nin=nrInputs(k);
     for i=1:Nin
         xij=yi{k}(i,:).*ones(nrNodes(k),nrMeasurements);
@@ -24,11 +24,13 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
         cij=NNset.centers{k}(:,i).*ones(nrNodes(k),nrMeasurements);
         wj=NNset.IW{k}(:,i);
         vj{k}=vj{k}+(wj.*(xij-cij)).^2;
-    end;
+        dvjwij{k,i}=2*(wj.*(xij-cij).^2);
+    end
     %output for hidden layer
-    disp(k);
+    %disp(k);
     yj{k}=NNset.a{k}.*exp(-vj{k});
     yi{k+1}=yj{k};
+    
     
     %output of current hidden layer is input for next hidden layer
 end
@@ -42,7 +44,7 @@ outputs.yi=yi;
 outputs.yk=yk;
 outputs.vj=vj;
 outputs.vk=vj;
-
+outputs.dvjwij=dvjwij;
 
 % hold on
 % plot3(atrue,Btrue,Y2'-Cm,'.b');
