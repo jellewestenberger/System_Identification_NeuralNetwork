@@ -17,6 +17,7 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
     nrOutputs=[nrOutputs, nrNodes(k)];
     vj{k}=zeros(nrNodes(k),nrMeasurements);
      dvjwij{k}=zeros(nrNodes(k),nrMeasurements);
+     dvjcij{k}=zeros(nrNodes(k),nrMeasurements);
     Nin=nrInputs(k);
     for i=1:Nin
         xij=yi{k}(i,:).*ones(nrNodes(k),nrMeasurements);
@@ -25,6 +26,7 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
         wj=NNset.IW{k}(:,i);
         vj{k}=vj{k}+(wj.*(xij-cij)).^2;
         dvjwij{k,i}=2*(wj.*(xij-cij).^2);
+        dvjcij{k,i}=-2*((wj.^2).*(xij-cij));
     end
     %output for hidden layer
     %disp(k);
@@ -45,7 +47,7 @@ outputs.yk=yk;
 outputs.vj=vj;
 outputs.vk=vj;
 outputs.dvjwij=dvjwij;
-
+outputs.dvjcij=dvjcij;
 % hold on
 % plot3(atrue,Btrue,Y2'-Cm,'.b');
 end

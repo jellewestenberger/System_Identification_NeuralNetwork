@@ -1,91 +1,185 @@
-function NNset=LevMar(NNset,Cm,X,mu_inc,mu_dec,evaltot,plotf)
+function NNset=LevMar(NNset,Cm,X,mu_inc,mu_dec,evaltot,plotf,selector)
 
-atrue=X(1,:);
-Btrue=X(2,:);
-Vtrue=X(3,:);
+% atrue=X(1,:);
+% Btrue=X(2,:);
+% Vtrue=X(3,:);
 
 %calculate dE/d Wjk   (Wjk = output weight);
 
+
+
+eval_par=find(selector); %number of parameters being evaluated 
+
+E=inf(1,length(selector)); %list for storing errors of individual steps
+E_old=inf(1,length(selector));
+mu=ones(size(E));
 outputs=calcNNOutput(NNset,X); 
 
-El=[];
-E2old=inf;
-mu1=1;
-mu2=1;
+
+
 for eval=1:evaltot
-
+disp(E(eval_par(end))) %display newest error 
         close all;
-    yk=outputs.yk; %total output of neural network
-    yi=outputs.yi; % inputs to input weights in each layer 
-
+%     yk=outputs.yk; %total output of neural network
+%     yi=outputs.yi; % inputs to input weights in each layer 
+% 
     if plotf
         figure
-        plot3(atrue,Btrue,yk,'.b'); 
+%         plot3(atrue,Btrue,yk,'.b'); 
+        plot(outputs.yk)
         title(strcat('evaluation ',num2str(eval)));
         hold on
-        plot3(atrue,Btrue,Cm,'.k');
+%         plot3(atrue,Btrue,Cm,'.k');
+        plot(Cm)
+        legend('Approximation','True');
         refreshdata
         drawnow
         pause
     end
-
-    ekq=Cm'-yk;         %IO mapping errors
-    E1=sum(0.5*ekq.^2); %squared error
-    El=[El, E1];
-
-    if plotf
-        figure
-        plot(El)
-        drawnow
-    end
-
-    disp(E1);
+% 
+%     ekq=Cm'-yk;         %IO mapping errors
+%     E1=sum(0.5*ekq.^2); %squared error
+%     El=[El, E1];
+% 
+% %     if plotf
+% %         figure
+% %         plot(El)
+% %         drawnow
+% %     end
+% 
+%     disp(E1);
+    
     %% calculate partial derivative wrt to output weights
-    if 1
-
-    dEdWjk=yi{1,2}*ekq'*(-1);
-    J=dEdWjk;
-    d=LM(J,E1,mu1);
-    NNset.LW=NNset.LW-d;
+    if selector(1)
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        E_old(1)=E(1);
+                           
+        dEdWjk=outputs.yi{1,2}*ekq'*(-1);
+        J=dEdWjk;
+        d=LM(J,E(1),mu(1));
+        NNset.LW=NNset.LW-d;
+        
+        outputs=calcNNOutput(NNset,X);        
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        
+        if E(1)>E_old(1)   
+            mu(1)=mu(1)+mu_inc;
+        else
+            mu(1)=mu(1)-mu_dec;
+        end
+        
     end
-
-    outputs=calcNNOutput(NNset,X);
-    yk=outputs.yk; %total output of neural network
-    yi=outputs.yi;
-    ekq=Cm'-yk;  
-    E2=sum(0.5*ekq.^2);
-
-    %% Adapt damping factor of LM algorithm
-    if E2>E1  
-        mu1=mu1+mu_inc;
-    else
-        mu1=mu1-mu_dec;
-    end
-
-    if E2old>E2
-        mu2=mu2+mu_inc;
-%         mu1=mu1+mu_inc;
-    else
-        mu2=mu2-mu_dec;
-%         mu1=mu1-mu_dec;
-    end
+  
+    selector=circshift(selector,-1,2);    
+    mu=circshift(mu,-1,2)   ;
+    E=circshift(E,-1,2);
+    E_old=circshift(E_old,-1,2);
 
     %% calculate partial derivatives wrt input weights
-    if 0 %switch LM on input weights on or off
+    if selector(1) %switch LM on input weights on or off
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        E_old(1)=E(1);
 
-    dPhijdVj=-NNset.a{1}.*exp(-outputs.vj{1});
-    dVjdWij=outputs.dvjwij;
 
-    d=[];
+        dPhijdVj=-NNset.a{1}.*exp(-outputs.vj{1});
+        dVjdWij=outputs.dvjwij;
 
-    for i=1:size(dVjdWij,2)
-    dEdWij=dVjdWij{1,i}.*dPhijdVj*ekq';
-    d=[d;LM(dEdWij,E2,mu2)];
+        d=[];
+
+        for i=1:size(dVjdWij,2)
+            dEdWij=dVjdWij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
+            d=[d;LM(dEdWij,E(1),mu(1))];
+        end
+        d=d';
+        NNset.IW{1}=NNset.IW{1}-d;        
+      
+        outputs=calcNNOutput(NNset,X);        
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        
+        
+        if E(1)>E_old(1)
+            mu(1)=mu(1)+mu_inc;
+        else
+            mu(1)=mu(1)-mu_dec;
+        end
+
     end
-    d=d';
-    NNset.IW{1}=NNset.IW{1}+d;
+    selector=circshift(selector,-1,2);    
+    mu=circshift(mu,-1,2)   ;
+    E=circshift(E,-1,2);
+    E_old=circshift(E_old,-1,2);
+
+    
+    %% Calculate amplitudes
+    if selector(1) %switch LM on input weights on or off
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        E_old(1)=E(1);
+
+        dEda=(-1)*exp(-outputs.vj{1})*ekq'.*NNset.LW';
+        d=LM(dEda,E(1),mu(1));
+        NNset.a{1}=NNset.a{1}-d';            
+      
+        outputs=calcNNOutput(NNset,X);        
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        
+        
+        if E(1)>E_old(1)
+            mu(1)=mu(1)+mu_inc;
+        else
+            mu(1)=mu(1)-mu_dec;
+        end
+
     end
-    E2old=E2;    
+    selector=circshift(selector,-1,2);    
+    mu=circshift(mu,-1,2)   ;
+    E=circshift(E,-1,2);
+    E_old=circshift(E_old,-1,2);
+    
+   %% calculate partial derivatives wrt center locations
+    if selector(1) %switch LM on input weights on or off
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        E_old(1)=E(1);
+
+
+        dPhijdVj=-NNset.a{1}.*exp(-outputs.vj{1});
+        dVjdCij=outputs.dvjcij;
+
+        d=[];
+
+        for i=1:size(dVjdCij,2)
+            dEdCij=dVjdCij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
+            d=[d;LM(dEdCij,E(1),mu(1))];
+        end
+        d=d';
+        NNset.centers{1}=NNset.centers{1}-d;        
+      
+        outputs=calcNNOutput(NNset,X);        
+        ekq=Cm'-outputs.yk;
+        E(1)=sum(0.5*ekq.^2);
+        
+        
+        if E(1)>E_old(1)
+            mu(1)=mu(1)+mu_inc;
+        else
+            mu(1)=mu(1)-mu_dec;
+        end
+
+    end
+    selector=circshift(selector,-1,2);    
+    mu=circshift(mu,-1,2)   ;
+    E=circshift(E,-1,2);
+    E_old=circshift(E_old,-1,2);  
+    
+    
+
+    
 
 end
 
