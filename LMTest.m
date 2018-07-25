@@ -3,17 +3,18 @@
 
 clear all
 close all
-u=linspace(0,20,200)';
-v=linspace(0,33,200)';
-w=linspace(0,50,200)';
+u=linspace(0,20,500)';
+v=linspace(0,33,500)';
+w=linspace(0,50,500)';
 y=sin(u)+5*cos(3*v)+sin(w-0.5*pi);
 
 X=[u, v, w];
 
 
-n_input=3;
+n_input=size(X,2);
 n_hidden=1;
 n_nodes=2000;
+
 n_output=1;
 input_range=[min(X);max(X)]'
 type='rbf'
@@ -24,6 +25,8 @@ network.a{1}=ones(n_nodes,1);
 mu_inc=10;
 mu_dec=0.1;
 
-network=LevMar(network,y,X,mu_inc,mu_dec,100,1,[1,1,1,1]);
+network=LevMar(network,y,X,mu_inc,mu_dec,100,1,[0,0,1,0
+    ]);
+
 
 

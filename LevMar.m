@@ -1,40 +1,62 @@
-function NNset=LevMar(NNset,Cm,X,mu_inc,mu_dec,evaltot,plotf,selector)
-
+function NNsetmin=LevMar(NNset,Cm,X,mu_inc,mu_dec,evaltot,plotf,selector)
+close all
 % atrue=X(1,:);
 % Btrue=X(2,:);
 % Vtrue=X(3,:);
 
 %calculate dE/d Wjk   (Wjk = output weight);
 
-
-
+if size(X,1)==2
+TRIeval = delaunayn(X');
+end
 eval_par=find(selector); %number of parameters being evaluated 
-
+minerror=inf;
 E=inf(1,length(selector)); %list for storing errors of individual steps
 E_old=inf(1,length(selector));
 mu=ones(size(E));
 outputs=calcNNOutput(NNset,X); 
-
-
-
+ekq=Cm'-outputs.yk;
+El=[sum(0.5*ekq.^2)];
+figure
 for eval=1:evaltot
 disp(E(eval_par(end))) %display newest error 
-        close all;
+clf
+%         close all;
 %     yk=outputs.yk; %total output of neural network
 %     yi=outputs.yi; % inputs to input weights in each layer 
 % 
     if plotf
-        figure
+        
+        if size(X,1)==2
+            set(gcf, 'WindowState','fullscreen')
+            
+            subplot(121)            
+            
+            trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none')
+            hold on
+            plot3(X(1,:),X(2,:),outputs.yk,'.')
+            hold on
+            subplot(122)
+           
+            semilogy(El)
+             title(strcat('error: ', num2str(El(end))))
+             xlabel('evaluation')
+             ylabel('error value');
+             grid();
+        else
+        
 %         plot3(atrue,Btrue,yk,'.b'); 
         plot(outputs.yk)
         title(strcat('evaluation ',num2str(eval)));
         hold on
 %         plot3(atrue,Btrue,Cm,'.k');
         plot(Cm)
-        legend('Approximation','True');
+        end
+%         legend('Approximation','True');
         refreshdata
         drawnow
-        pause
+%         pause
+        
     end
 % 
 %     ekq=Cm'-yk;         %IO mapping errors
@@ -180,8 +202,14 @@ disp(E(eval_par(end))) %display newest error
     
 
     
-
+El=[El,E(eval_par(end))];
+if El(end)<minerror
+    minerror=El(end);
+    NNsetmin=NNset;
 end
+end
+disp('min error:')
+disp(minerror)
 
 function d=LM(J,E,mu)
 d=((J'*J)+mu)^(-1)*J'*E;
