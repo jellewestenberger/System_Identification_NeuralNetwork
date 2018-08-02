@@ -114,7 +114,9 @@ clf
 
         d=[];
 
-        for i=1:size(dVjdWij,2)
+        
+        
+        for i=1:size(dVjdWij,2)% loop over input weights belonging to alpha, beta (and V)
             dEdWij=dVjdWij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
             d=[d;LM(dEdWij,E(1),mu(1))];
         end

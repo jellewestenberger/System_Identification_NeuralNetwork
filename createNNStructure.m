@@ -1,4 +1,4 @@
-function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype)
+function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,inittype)
 nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
@@ -24,9 +24,16 @@ elseif strcmp(Networktype,'rbf')
         else
             NNset.centers{h}=zeros(nrNodesHidden(h),inputs(h));
         end
+    if strcmp(inittype,'ones')   
     NNset.IW{h}=ones(nrNodesHidden(h),inputs(h)); %1's for now  INPUT WEIGHTS
     NNset.LW=ones(nrOutput,nrNodesHidden(end));%OUTPUT WEIGHTS (end because only last hidden layer connects to output) 
     NNset.a{h}=ones(nrNodesHidden(h),1);
+    end
+    if strcmp(inittype,'random')
+    NNset.IW{h}=randn(nrNodesHidden(h),inputs(h)); %1's for now  INPUT WEIGHTS
+    NNset.LW=randn(nrOutput,nrNodesHidden(end));%OUTPUT WEIGHTS (end because only last hidden layer connects to output) 
+    NNset.a{h}=randn(nrNodesHidden(h),1);
+    end
     end 
     NNset.name{1,1}='rbf';
 end
