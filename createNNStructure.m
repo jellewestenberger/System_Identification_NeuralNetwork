@@ -1,5 +1,5 @@
-function NNset=createNNStructure(nrInput,nrHiddenlayers,nrNodesHidden,nrOutput,inputrange,Networktype)
-
+function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype)
+nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
 

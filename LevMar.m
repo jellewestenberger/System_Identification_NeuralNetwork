@@ -1,11 +1,12 @@
-function NNsetmin=LevMar(NNset,Cm,X,mu_inc,mu_dec,evaltot,plotf,selector)
+function [NNsetmin, minerror]=LevMar(NNset,Cm,X,mu_inc,mu_dec,evaltot,plotf,selector)
 close all
 % atrue=X(1,:);
 % Btrue=X(2,:);
 % Vtrue=X(3,:);
 
 %calculate dE/d Wjk   (Wjk = output weight);
-
+disp('Number of Neurons:');
+disp(size(NNset.centers{1},1));
 if size(X,1)==2
 TRIeval = delaunayn(X');
 end
@@ -17,9 +18,11 @@ mu=ones(size(E));
 outputs=calcNNOutput(NNset,X); 
 ekq=Cm'-outputs.yk;
 El=[sum(0.5*ekq.^2)];
+evall=[];
 figure
 for eval=1:evaltot
 disp(E(eval_par(end))) %display newest error 
+evall=[evall, eval];
 clf
 %         close all;
 %     yk=outputs.yk; %total output of neural network
@@ -28,7 +31,7 @@ clf
     if plotf
         
         if size(X,1)==2
-            set(gcf, 'WindowState','fullscreen')
+%             set(gcf, 'WindowState','fullscreen')
             
             subplot(121)            
             
@@ -36,9 +39,9 @@ clf
             hold on
             plot3(X(1,:),X(2,:),outputs.yk,'.')
             hold on
-            subplot(122)
-           
+            subplot(122)            
             semilogy(El)
+            
              title(strcat('error: ', num2str(El(end))))
              xlabel('evaluation')
              ylabel('error value');
@@ -214,5 +217,7 @@ disp(minerror)
 function d=LM(J,E,mu)
 d=((J'*J)+mu)^(-1)*J'*E;
 end
+
+
 
 end

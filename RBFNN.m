@@ -16,11 +16,10 @@ Networktype='rbf';      %choose network type: radial basis function (rbf) or fee
 nrInput=size(X,2);      %number of inputs being used
 
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[100];    %add columns to add more hidden layers;
-nrHiddenlayers=size(nrNodesHidden,2);%number of nodes in the hidden layers
+nrNodesHidden=[132];    %add columns to add more hidden layers;
 inputrange=[min(X); max(X)]'; 
 
-NNset=createNNStructure(nrInput,nrHiddenlayers,nrNodesHidden,nrOutput,inputrange,Networktype);
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype);
 
 
 %%---CHECK---- %% 
@@ -50,8 +49,35 @@ end
 
 
 %% Levenberg Marquard
-NNset=LevMar(NNset,Cm,X,10,0.1,100,1,[1,1,1,1]);
-result=calcNNOutput(NNset,X);
+ [NNset, ~]=LevMar(NNset,Cm,X,10,0.1,100,1,[1,1,1,1]);
+ result=calcNNOutput(NNset,X);
+
+%% golden ratio search:
+GR=(1+sqrt(5))/2.; 
+a=1;
+b=1000;
+c=b-((b-a)/GR);
+d=a+((b-a)/GR);
+c=floor(c); %we need integers for number of neurons
+d=floor(d);
+
+while abs(c-d)>1
+    
+NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype);   
+NN_d=createNNStructure(nrInput,[d],nrOutput,inputrange,Networktype);   
+[~,E_c]=LevMar(NN_c,Cm,X,10,0.1,100,0,[1,0,0,0]);
+[~,E_d]=LevMar(NN_d,Cm,X,10,0.1,100,0,[1,0,0,0]);
+    if E_c< E_d
+        b=d;
+    else
+        a=c;
+    end
+    c=round(b-((b-a)/GR),0);
+    d=round(a+((b-a)/GR),0);
+
+end
+
+
 
 TRIeval = delaunayn(X');
 
