@@ -21,7 +21,7 @@ El=[sum(0.5*ekq.^2)];
 evall=[];
 figure
 for eval=1:evaltot
-disp(E(eval_par(end))) %display newest error 
+% disp(E(eval_par(end))) %display newest error 
 evall=[evall, eval];
 clf
 %         close all;

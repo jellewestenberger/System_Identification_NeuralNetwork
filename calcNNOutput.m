@@ -19,27 +19,40 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
      dvjwij{k}=zeros(nrNodes(k),nrMeasurements);
      dvjcij{k}=zeros(nrNodes(k),nrMeasurements);
     Nin=nrInputs(k);
-    for i=1:Nin
-        xij=yi{k}(i,:).*ones(nrNodes(k),nrMeasurements);
+    
+    if strcmp(NNset.trainFunct{k,1},'radbas')
+        for i=1:Nin
+            xij=yi{k}(i,:).*ones(nrNodes(k),nrMeasurements);
+            cij=NNset.centers{k}(:,i).*ones(nrNodes(k),nrMeasurements);
+            wj=NNset.IW{k}(:,i);
+            vj{k}=vj{k}+(wj.*(xij-cij)).^2;
+            dvjwij{k,i}=2*(wj.*(xij-cij).^2);
+            dvjcij{k,i}=-2*((wj.^2).*(xij-cij));
+        end
         
-        cij=NNset.centers{k}(:,i).*ones(nrNodes(k),nrMeasurements);
-        wj=NNset.IW{k}(:,i);
-        vj{k}=vj{k}+(wj.*(xij-cij)).^2;
-        dvjwij{k,i}=2*(wj.*(xij-cij).^2);
-        dvjcij{k,i}=-2*((wj.^2).*(xij-cij));
+        yj{k}=NNset.a{k}.*exp(-vj{k});%output for hidden layer
     end
-    %output for hidden layer
-    %disp(k);
-    yj{k}=NNset.a{k}.*exp(-vj{k});
-    yi{k+1}=yj{k};
-    
-    
-    %output of current hidden layer is input for next hidden layer
+    if strcmp(NNset.trainFunct{k,1},'tansig')
+        vj{k}=(NNset.IW{k}*yi{k});
+        if strcmp(NNset.name{1},'feedforward')
+        vj{k}=vj{k}+NNset.b{k,1}*ones(1,nrMeasurements); %add bias if feedforward
+        end
+       yj{k}=(2./(1+exp(-2*vj{k})))-1;
+    end
+        
+    yi{k+1}=yj{k}; %output hiddenlayer is input next hidden layer
+
 end
 
 %output of output layer;
 vk=NNset.LW'.*yi{end};
-yk=sum(vk,1);
+% if strcmp(NNset.
+if strcmp(NNset.name{1},'feedforward')
+     yk=sum(vk,1)+NNset.b{end}*ones(1,nrMeasurements);    
+elseif strcmp(NNset.name{1},'rbf')
+    yk=sum(vk,1);
+end
+    
 
 outputs=struct();
 outputs.yi=yi;

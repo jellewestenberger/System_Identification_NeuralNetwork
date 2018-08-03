@@ -44,10 +44,11 @@ elseif strcmp(net.name{1,1},'rbf')
     %   Generating input for the hidden layer
     Nin     = size(x,1);
     L_end   = size(x,2);
+   
     Nhidden = size(net.centers,1);
     V1      = zeros(Nhidden,L_end);
     for i = 1:Nin
-        V1 = V1 + (net.IW{1}(:,i)*x(i,:)-(net.IW{1}(:,i).*net.centers{1}(:,i))*ones(1,L_end)).^2;
+        V1 = V1 + (net.IW(:,i)*x(i,:)-(net.IW(:,i).*net.centers(:,i))*ones(1,L_end)).^2;
     end 
 
     %   Generating output of the hidden layer
