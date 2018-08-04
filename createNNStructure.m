@@ -1,4 +1,4 @@
-function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,inittype)
+function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,epoch,inittype)
 nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
@@ -55,7 +55,7 @@ end
 end
 
 
-NNset.trainParam.epochs=100;
+NNset.trainParam.epochs=epoch;
 NNset.trainParam.goal=0;
 NNset.trainParam.min_grad=1e-10;
 NNset.trainParam.mu=1e-3; %learning rate 

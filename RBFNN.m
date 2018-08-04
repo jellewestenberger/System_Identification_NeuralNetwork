@@ -12,7 +12,6 @@ X=[atrue'; Btrue'];%]; %input vector
 % X=[alpha_m,beta_m];
 
 %% Create Initial Neural Network Structure
-
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
@@ -21,16 +20,15 @@ X=X';
 inputrange=[min(X); max(X)]'; 
 X=X';
 
-NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,'ones');
-save('NNset','NNset');
+
 
 %%---CHECK---- %% 
- check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
+%  check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
 
 
 
 %% Linear regression 
-NNset_lin=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,'random');
+NNset_lin=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random');
 swit=1;
 if swit
 k=1; %only valid for one hidden layer (for now);
@@ -56,10 +54,12 @@ hold on
 plot3(X(1,:),X(2,:),result.yk,'.')
 
 %% Levenberg Marquard
- [NNset, ~]=LevMar(NNset,Cm,X,10,0.1,100,1,[1,1,1,1]);
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'ones');
+
+ [NNset, ~]=LevMar(NNset,Cm,X,1,{'wo','wi','a','c'});
  result=calcNNOutput(NNset,X);
 
-% %% golden ratio search:
+%% golden ratio search:
 GR=(1+sqrt(5))/2.; 
 a=100;
 b=700;
@@ -74,16 +74,16 @@ while abs(c-d)>=1
         i=find(El(:,1)==c);
         E_c=El(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,'ones');  
-        [~,E_c]=LevMar(NN_c,Cm,X,10,0.1,100,1,[1,1,1,1]);
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones');  
+        [~,E_c]=LevMar(NN_c,Cm,X,1,{'wo','wi','a','c'});
         El=[El; c,E_c];
     end   
     if size(find(El(:,1)==d),1)==1    
         i=find(El(:,1)==d);
         E_d=El(i,2);
     else
-        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,'ones');  
-        [~,E_d]=LevMar(NN_d,Cm,X,10,0.1,100,1,[1,1,1,1]);
+        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,100,'ones');  
+        [~,E_d]=LevMar(NN_d,Cm,X,1,{'wo','wi','a','c'});
         El=[El; d,E_d];
     end   
 
@@ -103,8 +103,8 @@ if size(find(El(:,1)==c),1)==1
         i=find(El(:,1)==c);
         E_c=El(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,'ones');  
-        [~,E_c]=LevMar(NN_c,Cm,X,10,0.1,100,1,[1,1,1,1]);
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones');  
+        [~,E_c]=LevMar(NN_c,Cm,X,1,[1,1,1,1]);
         El=[El; c,E_c];
         
 end

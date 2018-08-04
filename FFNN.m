@@ -22,7 +22,7 @@ Networktype='ff';
 
 
 
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,'ones');
+NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,100,'ones');
 out=calcNNOutput(NetFF,X);
 
 TRIeval = delaunayn(X');
