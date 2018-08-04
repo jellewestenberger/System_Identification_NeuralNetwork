@@ -24,35 +24,27 @@ for eval=1:evaltot
 % disp(E(eval_par(end))) %display newest error 
 evall=[evall, eval];
 clf
-%         close all;
-%     yk=outputs.yk; %total output of neural network
-%     yi=outputs.yi; % inputs to input weights in each layer 
-% 
+
     if plotf
         
         if size(X,1)==2
-%             set(gcf, 'WindowState','fullscreen')
-            
-            subplot(121)            
-            
+%             set(gcf, 'WindowState','fullscreen')            
+            subplot(121)                        
             trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none')
             hold on
             plot3(X(1,:),X(2,:),outputs.yk,'.')
             hold on
             subplot(122)            
-            semilogy(El)
-            
+            semilogy(El)            
              title(strcat('error: ', num2str(El(end))))
              xlabel('evaluation')
              ylabel('error value');
              grid();
         else
         
-%         plot3(atrue,Btrue,yk,'.b'); 
         plot(outputs.yk)
         title(strcat('evaluation ',num2str(eval)));
         hold on
-%         plot3(atrue,Btrue,Cm,'.k');
         plot(Cm)
         end
 %         legend('Approximation','True');
@@ -61,18 +53,7 @@ clf
 %         pause
         
     end
-% 
-%     ekq=Cm'-yk;         %IO mapping errors
-%     E1=sum(0.5*ekq.^2); %squared error
-%     El=[El, E1];
-% 
-% %     if plotf
-% %         figure
-% %         plot(El)
-% %         drawnow
-% %     end
-% 
-%     disp(E1);
+
     
     %% calculate partial derivative wrt to output weights
     if selector(1)
@@ -107,15 +88,10 @@ clf
         ekq=Cm'-outputs.yk;
         E(1)=sum(0.5*ekq.^2);
         E_old(1)=E(1);
-
-
         dPhijdVj=-NNset.a{1}.*exp(-outputs.vj{1});
         dVjdWij=outputs.dvjwij;
-
         d=[];
-
-        
-        
+      
         for i=1:size(dVjdWij,2)% loop over input weights belonging to alpha, beta (and V)
             dEdWij=dVjdWij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
             d=[d;LM(dEdWij,E(1),mu(1))];
@@ -199,14 +175,11 @@ clf
         end
 
     end
-    selector=circshift(selector,-1,2);    
-    mu=circshift(mu,-1,2)   ;
-    E=circshift(E,-1,2);
-    E_old=circshift(E_old,-1,2);  
-    
-    
 
-    
+selector=circshift(selector,-1,2);    
+mu=circshift(mu,-1,2)   ;
+E=circshift(E,-1,2);
+E_old=circshift(E_old,-1,2);      
 El=[El,E(eval_par(end))];
 if El(end)<minerror
     minerror=El(end);
