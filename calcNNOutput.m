@@ -16,7 +16,7 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
     nrInputs=[nrInputs,size(yi{k},1)];
     nrOutputs=[nrOutputs, nrNodes(k)];
     vj{k}=zeros(nrNodes(k),nrMeasurements);
-     dvjwij{k}=zeros(nrNodes(k),nrMeasurements);
+     dvjdwij{k}=zeros(nrNodes(k),nrMeasurements);
      dvjcij{k}=zeros(nrNodes(k),nrMeasurements);
     Nin=nrInputs(k);
     
@@ -26,8 +26,9 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
             cij=NNset.centers{k}(:,i).*ones(nrNodes(k),nrMeasurements);
             wj=NNset.IW{k}(:,i);
             vj{k}=vj{k}+(wj.*(xij-cij)).^2;
-            dvjwij{k,i}=2*(wj.*(xij-cij).^2);
+            dvjdwij{k,i}=2*(wj.*(xij-cij).^2);
             dvjcij{k,i}=-2*((wj.^2).*(xij-cij));
+            dphidvj{k}=-NNset.a{k}.*exp(-vj{k});
         end
         
         yj{k}=NNset.a{k}.*exp(-vj{k});%output for hidden layer
@@ -38,6 +39,8 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
         vj{k}=vj{k}+NNset.b{k,1}*ones(1,nrMeasurements); %add bias if feedforward
         end
        yj{k}=(2./(1+exp(-2*vj{k})))-1;
+       dvjdwij{k}=yi{k};
+       dphidvj{k}=(4*exp(-2*vj{k}))./((1+exp(-2*vj{k})).^2);
     end
         
     yi{k+1}=yj{k}; %output hiddenlayer is input next hidden layer
@@ -59,8 +62,9 @@ outputs.yi=yi;
 outputs.yk=yk;
 outputs.vj=vj;
 outputs.vk=vj;
-outputs.dvjwij=dvjwij;
+outputs.dvjdwij=dvjdwij;
 outputs.dvjcij=dvjcij;
+outputs.dphidvj=dphidvj;
 % hold on
 % plot3(atrue,Btrue,Y2'-Cm,'.b');
 end

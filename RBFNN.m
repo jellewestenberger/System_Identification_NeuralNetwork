@@ -55,8 +55,8 @@ plot3(X(1,:),X(2,:),result.yk,'.')
 
 %% Levenberg Marquard
 NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'ones');
-
- [NNset, ~]=LevMar(NNset,Cm,X,1,{'wo','wi','a','c'});
+Cm
+ [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wo','wi','a','c'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:
@@ -75,7 +75,7 @@ while abs(c-d)>=1
         E_c=El(i,2);
     else
         NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones');  
-        [~,E_c]=LevMar(NN_c,Cm,X,1,{'wo','wi','a','c'});
+        [~,E_c]=trainNetwork(NN_c,Cm,X,1,{'wo','wi','a','c'});
         El=[El; c,E_c];
     end   
     if size(find(El(:,1)==d),1)==1    
@@ -83,13 +83,13 @@ while abs(c-d)>=1
         E_d=El(i,2);
     else
         NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,100,'ones');  
-        [~,E_d]=LevMar(NN_d,Cm,X,1,{'wo','wi','a','c'});
+        [~,E_d]=trainNetwork(NN_d,Cm,X,1,{'wo','wi','a','c'});
         El=[El; d,E_d];
     end   
 
 % NN_d=createNNStructure(nrInput,[d],nrOutput,inputrange,Networktype,'ones');   
 % 
-% [~,E_d]=LevMar(NN_d,Cm,X,10,0.1,100,1,[1,1,1,1]);
+% [~,E_d]=trainNetwork(NN_d,Cm,X,10,0.1,100,1,[1,1,1,1]);
     if E_c< E_d
         b=d;
     else
@@ -104,7 +104,7 @@ if size(find(El(:,1)==c),1)==1
         E_c=El(i,2);
     else
         NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones');  
-        [~,E_c]=LevMar(NN_c,Cm,X,1,[1,1,1,1]);
+        [~,E_c]=trainNetwork(NN_c,Cm,X,1,[1,1,1,1]);
         El=[El; c,E_c];
         
 end

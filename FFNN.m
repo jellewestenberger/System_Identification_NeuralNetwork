@@ -14,7 +14,7 @@ load('NNset.mat');
 X=[atrue, Btrue];%]; %input vector 
 X=X' ;
 nrInput=size(X,1);
-nrNodesHidden=[100,100];
+nrNodesHidden=[100];
 nrOutput=1;
 inputrange=[min(X); max(X)]';
 X';
@@ -22,8 +22,11 @@ Networktype='ff';
 
 
 
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,100,'ones');
-out=calcNNOutput(NetFF,X);
+NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random');
+% NetFF.b{1}=-1*ones(size(NetFF.b{1}));
+[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'wo','wi'}]);
+
+
 
 TRIeval = delaunayn(X');
 
