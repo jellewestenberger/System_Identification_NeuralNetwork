@@ -14,7 +14,7 @@ load('NNset.mat');
 X=[atrue, Btrue];%]; %input vector 
 X=X' ;
 nrInput=size(X,1);
-nrNodesHidden=[100];
+nrNodesHidden=[3];
 nrOutput=1;
 inputrange=[min(X); max(X)]';
 X';
@@ -23,8 +23,14 @@ Networktype='ff';
 
 
 NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random');
+% NetFF.trainalg='trainbp'
+% NetFF.trainParam.mu=1e-7; 
+%  NetFF.trainParam.mu_inc=0;
+%  NetFF.trainParam.mu_dec=0;
+NetFF.IW{1}=NetFF.IW{1}*1e-1;
+% NetFF.LW=NetFF.LW*-1;
 % NetFF.b{1}=-1*ones(size(NetFF.b{1}));
-[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'wo','wi'}]);
+[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'bo','wo','bi','wi'}]);
 
 
 

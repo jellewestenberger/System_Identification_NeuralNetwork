@@ -5,6 +5,7 @@ close all
 % Vtrue=X(3,:);
 
 %calculate dE/d Wjk   (Wjk = output weight);
+eta=0.0000001;
 disp('Number of Neurons:');
 disp(length(NNset.LW));
 if size(X,1)==2
@@ -78,6 +79,11 @@ for eval=1:evaltot
                     if strcmp(NNset.trainFunct{1},'tansig')
                     tansigInputWeight();
                     end
+                elseif strcmp(selector(1),'bi')
+                    inputBias();
+                elseif strcmp(selector(1),'bo')
+                    outputBias();
+                    
                 end
             end
             update();
@@ -128,6 +134,9 @@ function outputWeight()
         J=dEdWjk;
         if strcmp(NNset.trainalg,'trainlm')
         d=LM(J,E(1),mu(1));
+         elseif strcmp(NNset.trainalg,'trainbp')
+           d=mu(1)*J; 
+           d=d';
         end
         NNset.LW=NNset.LW-d;
 end
@@ -144,6 +153,7 @@ function radbasInputWeight()
         dEdWij=dVjdWij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
         if strcmp(NNset.trainalg,'trainlm')
         d=[d;LM(dEdWij,E(1),mu(1))];
+             
         end
     end
     d=d';
@@ -158,13 +168,15 @@ function tansigInputWeight()
     dVjdWij=outputs.dvjdwij{1};%yi{1};
     d=[];
     for i=1:size(dVjdWij,1)
-       dEdWij=dPhijdVj.*dVjdWij(i,:)*ekq'*(-1).*NNset.LW'; 
+       dEdWij=sum(dPhijdVj.*dVjdWij(i,:).*ekq*(-1).*NNset.LW',2); 
        if strcmp(NNset.trainalg,'trainlm')
        d=[d;LM(dEdWij,E(1),mu(1))];
+       elseif strcmp(NNset.trainalg,'trainbp')
+           d=[d;(mu(1)*dEdWij)'];
        end
     end
     d=d';
-    NNset.IW{1}=NNset.IW{1}-d;  
+    NNset.IW{1}=NNset.IW{1}+d;  
 end
 
 function radbasAmplitude()
@@ -199,4 +211,29 @@ function radbasCenter()
     d=d';
     NNset.centers{1}=NNset.centers{1}-d;       
 end
+
+    function inputBias()
+              
+    ekq=Cm'-outputs.yk;
+    E(1)=sum(0.5*ekq.^2);
+    E_old(1)=E(1);
+    dEdyj=(-1)*ekq.*NNset.LW';
+    dEdbi=sum(dEdyj.*outputs.dphidvj{1},2);
+        if strcmp(NNset.trainalg,'trainlm')
+        d=LM(dEdbi,E(1),mu(1));
+        end
+        NNset.b{1}=NNset.b{1}-d';
+    end
+    function outputBias()
+         
+    ekq=Cm'-outputs.yk;
+    E(1)=sum(0.5*ekq.^2);
+    E_old(1)=E(1);
+    dEdbo=sum((-1)*ekq)
+    if strcmp(NNset.trainalg,'trainlm')
+        d=LM(dEdbo,E(1),mu(1));
+    end
+    NNset.b{end}=NNset.b{end}-d
+    end
+
 end
