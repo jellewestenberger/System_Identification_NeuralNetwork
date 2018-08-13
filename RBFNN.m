@@ -5,20 +5,23 @@ load('atrue.mat');
 load('Btrue.mat');
 load('Vtrue.mat');
 load('T.mat');
-load('F16traindata_CMabV_2018','Cm');
+% load('F16traindata_CMabV_2018','Cm');
+load_f16data2018;
+
 % load_f16data2018
 % Cm=-1*Cm;
-X=[atrue'; Btrue'];%]; %input vector 
+X=[alpha_m';beta_m'];
+% X=[atrue'; Btrue'];%]; %input vector 
 % X=[alpha_m,beta_m];
 
 %% Create Initial Neural Network Structure
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[137];    %add columns to add more hidden layers;
+nrNodesHidden=[130] ;   %add columns to add more hidden layers;
 X=X';
 inputrange=[min(X); max(X)]'; 
-X=X';
+X=X';   
 
 
 
@@ -54,8 +57,8 @@ hold on
 plot3(X(1,:),X(2,:),result.yk,'.')
 
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'ones');
-Cm
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'ones');
+
  [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wo','wi','a','c'});
  result=calcNNOutput(NNset,X);
 

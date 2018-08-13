@@ -10,7 +10,7 @@ nrOutputs=[];
 yi{1}=X(:,:); %input values for all layers (before input weight)
 vj={};
 yj={};
-
+vi={}; %individual sums (vj is sum of vi's)
 for k=1:nrHiddenlayers %loop over number of hidden layers
     nrNodes=[nrNodes,size(NNset.IW{k},1)];
     nrInputs=[nrInputs,size(yi{k},1)];
@@ -25,6 +25,7 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
             xij=yi{k}(i,:).*ones(nrNodes(k),nrMeasurements);
             cij=NNset.centers{k}(:,i).*ones(nrNodes(k),nrMeasurements);
             wj=NNset.IW{k}(:,i);
+            vi{i,k}=(wj.*(xij-cij)).^2;
             vj{k}=vj{k}+(wj.*(xij-cij)).^2;
             dvjdwij{k,i}=2*(wj.*(xij-cij).^2);
             dvjcij{k,i}=-2*((wj.^2).*(xij-cij));

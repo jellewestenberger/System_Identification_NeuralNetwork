@@ -12,7 +12,7 @@ load('T.mat');
 
 
 vars=3; %number of variables (in this case alpha, beta and 
-n=6; %polynomial order
+n=5; %polynomial order
 % A=zeros(size(T,2),vars*n+1);
 A=zeros(size(T,2),n+1);
 A(:,1)=1;
@@ -38,6 +38,7 @@ end
 est=((A'*A)^(-1))*A'*Cm;
 estimatedCm=A*est;
 resi=Cm-estimatedCm;
+quaderr=sum(resi.^2);  
 meanres=mean(resi);
 TRIeval = delaunayn([atrue Btrue]);
 
@@ -46,6 +47,7 @@ plot3(atrue,Btrue,Cm,'.k');
 grid();
 hold on
 trisurf(TRIeval,atrue,Btrue,estimatedCm,'EdgeColor','None');
+title
 
 figure
 title('residual');
