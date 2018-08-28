@@ -5,14 +5,15 @@ plotflag='y';
 %--------EXTENDED KALMAN FILTER-------
 epsilon=1e-10;
 maxIterations=100;
-doIEKF=0;
+doIEKF=1;
 dt=0.01;
-N=size(U_k,1);
-D_x=U_k';
+N=size(U_k,1); % #measurements
+D_x=U_k'; 
 Z_k=Z_k';
 D_x=[D_x;zeros(1,size(D_x,2))];
 m=4; %state dimension
 n=3; %output dimension
+state_est_err=[];
 
 Ex_0=[Vtot(1);0;0;0]; %initial state values
 
@@ -48,7 +49,6 @@ B=eye(m);  %input matrix
 % vm=sqrt(u0.^2+v0.^2+w0.^2)
 
 XX_k1k1=zeros(m,N); %array for optimal predicted states 
-% PP_k1k1=zeros(m,N); %array for optimal covariances 
 z_pred=zeros(n,N);
 % calc_MeasurementMat(Ex_0,v_k(:,3));
 
@@ -75,7 +75,7 @@ z_kk1=calc_MeasurementMat(ti,x_kk_1,v_k(:,k));
 %pertubation of state 
 Fx=zeros(m,m); %The accelerometer values do not depend on the state values so Fx is zero.
 
-[dummy,Psi]=c2d(Fx,B,dt);%
+[~,Psi]=c2d(Fx,B,dt);%
 [Phi,Gamma]=c2d(Fx,G,dt);%
 
 %prediction covariance matrix
@@ -101,7 +101,7 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
             
             
             % Check observability of state
-            if (k == 1 && itts == 1)
+            if ((k-1) == 1 && itts == 1)
                 rankHF = kf_calcObsRank(Hx, Fx);
                 if (rankHF < n)
                     warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, n);
@@ -120,7 +120,7 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
             err     = norm((eta2 - eta1), inf) / norm(eta1, inf);
         end
 
-        x_k_1k_1          = eta2;
+        x_k1k1          = eta2;
 
     else
    
@@ -140,17 +140,18 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
     %corrected measurement
     z_k1k1=calc_MeasurementMat(ti,x_k1k1,v_k(:,k));
     z_pred(:,k)=z_k1k1;
+    state_est_err=[state_est_err, (x_k1k1-x_kk_1)];
 end
 %     
-% atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,:));  
-% Btrue=(z_pred(2,:)-v_k(2,:));
-% Vtrue=(z_pred(3,:)-v_k(3,:));
+atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,:));  
+Btrue=(z_pred(2,:)-v_k(2,:));
+Vtrue=(z_pred(3,:)-v_k(3,:));
 %NOT SURE IF NEED TO BE REMOVED FROM TRUE MEASUREMENTS OR PREDICTED
 %MEASUREMENTS 
-atrue=(alpha_m'-v_k(1,:))./(1+XX_k1k1(4,:));
-Btrue=(beta_m'-v_k(2,:));
-Vtrue=(Vtot'-v_k(3,:));
-
+% atrue=(alpha_m'-v_k(1,:))./(1+XX_k1k1(4,:));
+% Btrue=(beta_m'-v_k(2,:));
+% Vtrue=(Vtot'-v_k(3,:));
+% 
 
 T=[0:dt:(10000*dt)];
 
@@ -204,6 +205,22 @@ plot3(alpha_m',beta_m',Cm,'.b');
 grid();
 % hold on
 % trisurf(TRIeval,atrue',Btrue',Cm,'EdgeColor','None');
+figure
+subplot(221)
+
+plot(T(2:end),state_est_err(1,:))
+title('u')
+subplot(222)
+plot(T(2:end),state_est_err(2,:))
+title('v')
+subplot(223)
+plot(T(2:end),state_est_err(3,:))
+title('w')
+subplot(224)
+plot(T(2:end),state_est_err(4,:))
+title('Ca')
+
+
 
 end
 
