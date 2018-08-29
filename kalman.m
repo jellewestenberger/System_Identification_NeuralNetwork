@@ -2,10 +2,10 @@ clear all
 close all
 load_f16data2018
 plotflag='y';
-%--------EXTENDED KALMAN FILTER-------
+%% --------EXTENDED KALMAN FILTER-------
 epsilon=1e-10;
 maxIterations=100;
-doIEKF=1;
+doIEKF=0;
 dt=0.01;
 N=size(U_k,1); % #measurements
 D_x=U_k'; 
@@ -34,24 +34,9 @@ v_k=R*randn(n,N)+Ev.*ones(n,N); %[va,vb,vv]
 G= zeros(m); %noise input matrix  (no noise in accelerometer measurements) 
 B=eye(m);  %input matrix 
 
-%create measurement function 
-
-% u0=Ex_0(1);
-% v0=Ex_0(2);
-% w0=Ex_0(3);
-% C0=Ex_0(4);
-% va=v_k(1,3);
-% vb=v_k(2,3);
-% vv=v_k(3,3);
-% 
-% am=atan2(w0,u0)*(1+C0)+va
-% bm=atan2(v0,sqrt(u0.^2+w0.^2))+vb
-% vm=sqrt(u0.^2+v0.^2+w0.^2)
 
 XX_k1k1=zeros(m,N); %array for optimal predicted states 
 z_pred=zeros(n,N);
-% calc_MeasurementMat(Ex_0,v_k(:,3));
-
 
 %run extended kalman filters
 disp('running kalman filter on measurements');
@@ -99,12 +84,14 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
             % Construct the Jacobian H = d/dx(h(x))) with h(x) the observation model transition matrix 
             Hx       = calc_Jacob_out(eta1);
             
-            
+%             
             % Check observability of state
-            if ((k-1) == 1 && itts == 1)
+            if (k == 2 && itts == 1)
                 rankHF = kf_calcObsRank(Hx, Fx);
                 if (rankHF < n)
                     warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, n);
+                else
+                    disp('The state is observable (KF converges)');
                 end
             end
             
@@ -122,11 +109,21 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
 
         x_k1k1          = eta2;
 
-    else
-   
-
+   else
+    
+    %if not IEKF
     %pertubation of measurements
     Hx=calc_Jacob_out(x_kk_1);
+    %Check observability 
+    if k==2
+    rankHF = kf_calcObsRank(Hx, Fx);
+                if (rankHF < n)
+                    warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, n);
+                else
+                    disp('The state is observable (KF converges)');
+                end
+    end
+    
     %kalman gain
     K=P_kk_1*Hx'*(Hx*P_kk_1*Hx'+R)^(-1);
 
