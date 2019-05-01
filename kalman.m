@@ -5,7 +5,7 @@ plotflag='y';
 %% --------EXTENDED KALMAN FILTER-------
 epsilon=1e-10;
 maxIterations=100;
-doIEKF=0;
+doIEKF=1;
 dt=0.01;
 N=size(U_k,1); % #measurements
 D_x=U_k'; 
@@ -88,8 +88,8 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
             % Check observability of state
             if (k == 2 && itts == 1)
                 rankHF = kf_calcObsRank(Hx, Fx);
-                if (rankHF < n)
-                    warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, n);
+                if (rankHF < m)
+                    warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, m);
                 else
                     disp('The state is observable (KF converges)');
                 end

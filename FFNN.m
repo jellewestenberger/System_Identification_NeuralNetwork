@@ -11,10 +11,16 @@ load('F16traindata_CMabV_2018','Cm');
 load('NNset.mat');
 
 % Cm=-1*Cm;
-X=[atrue, Btrue];%]; %input vector 
+atruenom=normalize(atrue,'zscore');
+btruenom=normalize(Btrue,'zscore');
+
+
+
+
+X=[atruenom, btruenom];%]; %input vector 
 X=X' ;
 nrInput=size(X,1);
-nrNodesHidden=[30];
+nrNodesHidden=[100];
 nrOutput=1;
 inputrange=[min(X); max(X)]';
 X';
@@ -22,15 +28,19 @@ Networktype='ff';
 
 
 
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random');
+NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random');
 NetFF.trainalg='trainlm';
 NetFF.trainParam.mu=1e-7; 
 %  NetFF.trainParam.mu_inc=0;
 %  NetFF.trainParam.mu_dec=0;
-NetFF.IW{1}=NetFF.IW{1}*1e-6;
-NetFF.LW=NetFF.LW*1e-6;
+
+NetFF.LW=NetFF.LW/nrNodesHidden(1);
+NetFF.b{1}=min(Cm)*ones(size(NetFF.b{1}));
 % NetFF.b{1}=-1*ones(size(NetFF.b{1}));
-[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'bo','wo'}]);
+% load 'NNset.mat'
+% NetFF=NNset;
+
+[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'wo','wi','bi'}]);
 
 
 

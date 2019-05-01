@@ -10,8 +10,13 @@ load_f16data2018;
 
 % load_f16data2018
 % Cm=-1*Cm;
-X=[alpha_m';beta_m'];
-% X=[atrue'; Btrue'];%]; %input vector 
+% X=[alpha_m';beta_m'];
+
+atrue_nom=normalize(atrue,'zscore');
+btrue_nom=normalize(Btrue,'zscore');
+% X=[atrue_nom'; btrue_nom'];%]; %input vector 
+X=[atrue'; Btrue'];%]; %input vector 
+
 % X=[alpha_m,beta_m];
 
 %% Create Initial Neural Network Structure
@@ -58,6 +63,8 @@ plot3(X(1,:),X(2,:),result.yk,'.')
 
 %% Levenberg Marquard
 NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'ones');
+
+% Cm_norm=normalize(Cm,'zscore');
 
  [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wo','wi','a','c'});
  result=calcNNOutput(NNset,X);
