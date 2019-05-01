@@ -7,15 +7,20 @@ load('Vtrue.mat');
 load('T.mat');
 % load('F16traindata_CMabV_2018','Cm');
 load_f16data2018;
-
+% ind=[1:10:size(Cm,1)];
+% Cm=Cm(ind);
+% atrue=atrue(ind);
+% Btrue=Btrue(ind);
 % load_f16data2018
 % Cm=-1*Cm;
 % X=[alpha_m';beta_m'];
 % Cm=normalize(Cm)
-atrue_nom=normalize(atrue,'zscore');
-btrue_nom=normalize(Btrue,'zscore');
+% atrue_nom=normalize(atrue,'zscore');
+% btrue_nom=normalize(Btrue,'zscore');
 % X=[atrue_nom'; btrue_nom'];%]; %input vector 
+% Cm=normalize(Cm,'zscore');
 X=[atrue'; Btrue'];%]; %input vector 
+
 
 % X=[alpha_m,beta_m];
 
@@ -23,9 +28,9 @@ X=[atrue'; Btrue'];%]; %input vector
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[130] ;   %add columns to add more hidden layers;
+nrNodesHidden=[150] ;   %add columns to add more hidden layers;
 X=X';
-inputrange=[min(X); max(X)]'; 
+inputrange=[0.8*min(X); 1.2*max(X)]'; 
 X=X';   
 
 
@@ -34,8 +39,8 @@ X=X';
 %  check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
 
 %% Linear regression 
-NNset_lin=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random',Cm);
-NNset_lin.IW{1}=NNset_lin.IW{1};
+NNset_lin=createNNStructure(nrInput,[15],nrOutput,inputrange,Networktype,1000,'random',Cm);
+% NNset_lin.IW{1}=NNset_lin.IW{1}*1e-1;
 swit=1;
 if swit
 k=1; %only valid for one hidden layer (for now);
@@ -47,7 +52,7 @@ for j=1:size(A,2)
     end
    A(:,j)=exp(-vk').*NNset_lin.LW(j);
 end
-a_est=inv(A'*A)*A'*Cm; %least-squared estimators 
+a_est=(A'*A)^(-1)*A'*Cm; %least-squared estimators 
 Cm_est=A*a_est;
 NNset_lin.a{k}=a_est; 
 end
@@ -55,17 +60,20 @@ result=calcNNOutput(NNset_lin,X);
 E=sum(result.yk'-Cm);
 TRIeval = delaunayn(X(1:2,:)');
 
-figure
+clf
 trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
 hold on
-plot3(X(1,:),X(2,:),result.yk,'.')
+plot3(X(1,:),X(2,:),Cm_est,'.')
 title(strcat("Error:",num2str(E)));
+refreshdata
+drawnow
+
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'random',Cm);
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'ones',Cm);
 
 % Cm_norm=normalize(Cm,'zscore');
 
- [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wi','a','c','wo'});
+ [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'a','wi','wo','c'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:

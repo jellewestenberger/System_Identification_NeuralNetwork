@@ -25,7 +25,8 @@ elseif strcmp(Networktype,'rbf')
                    minin=NNset.range(i,1);
                    minout=NNset.range(i,2);
                    NNset.centers{h}(:,i)=linspace(minin,minout,nrNodesHidden(1))';
-                end  
+%                    NNset.centers{h}(:,i)=randn(nrNodesHidden(h),1)';
+                end     
             end
         else
             NNset.centers{h}=zeros(nrNodesHidden(h),inputs(h));
@@ -59,9 +60,9 @@ NNset.trainParam.epochs=epoch;
 NNset.trainParam.goal=0;
 NNset.trainParam.min_grad=1e-10;
 NNset.trainParam.mu=1e-5; %learning rate 
-NNset.trainParam.mu_dec=1e-2; 
+NNset.trainParam.mu_dec=1e-1; 
 NNset.trainParam.mu_inc=10;
-NNset.trainParam.mu_max=1e5; 
+NNset.trainParam.mu_max=1e10; 
 NNset.trainalg=('trainlm');
 
 end

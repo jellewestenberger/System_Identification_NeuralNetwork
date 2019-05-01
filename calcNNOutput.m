@@ -1,4 +1,5 @@
 function outputs=calcNNOutput(NNset,X)
+global eval 
 hiddenoutput={};
 Vj={};
 nrHiddenlayers=size(NNset.IW,2);
@@ -71,4 +72,5 @@ outputs.dvjcij=dvjcij;
 outputs.dphidvj=dphidvj;
 % hold on
 % plot3(atrue,Btrue,Y2'-Cm,'.b');
+eval=eval+1;
 end
