@@ -11,7 +11,7 @@ load_f16data2018;
 % load_f16data2018
 % Cm=-1*Cm;
 % X=[alpha_m';beta_m'];
-
+% Cm=normalize(Cm)
 atrue_nom=normalize(atrue,'zscore');
 btrue_nom=normalize(Btrue,'zscore');
 % X=[atrue_nom'; btrue_nom'];%]; %input vector 
@@ -33,10 +33,9 @@ X=X';
 %%---CHECK---- %% 
 %  check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
 
-
-
 %% Linear regression 
-NNset_lin=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random');
+NNset_lin=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,1000,'random',Cm);
+NNset_lin.IW{1}=NNset_lin.IW{1};
 swit=1;
 if swit
 k=1; %only valid for one hidden layer (for now);
@@ -53,20 +52,20 @@ Cm_est=A*a_est;
 NNset_lin.a{k}=a_est; 
 end
 result=calcNNOutput(NNset_lin,X);
-
+E=sum(result.yk'-Cm);
 TRIeval = delaunayn(X(1:2,:)');
 
 figure
 trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
 hold on
 plot3(X(1,:),X(2,:),result.yk,'.')
-
+title(strcat("Error:",num2str(E)));
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'ones');
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'random',Cm);
 
 % Cm_norm=normalize(Cm,'zscore');
 
- [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wo','wi','a','c'});
+ [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wi','a','c','wo'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:
@@ -84,7 +83,7 @@ while abs(c-d)>=1
         i=find(El(:,1)==c);
         E_c=El(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones');  
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones',Cm);  
         [~,E_c]=trainNetwork(NN_c,Cm,X,1,{'wo','wi','a','c'});
         El=[El; c,E_c];
     end   
@@ -92,7 +91,7 @@ while abs(c-d)>=1
         i=find(El(:,1)==d);
         E_d=El(i,2);
     else
-        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,100,'ones');  
+        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,100,'ones',Cm);  
         [~,E_d]=trainNetwork(NN_d,Cm,X,1,{'wo','wi','a','c'});
         El=[El; d,E_d];
     end   
@@ -113,7 +112,7 @@ if size(find(El(:,1)==c),1)==1
         i=find(El(:,1)==c);
         E_c=El(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones');  
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones',Cm);  
         [~,E_c]=trainNetwork(NN_c,Cm,X,1,[1,1,1,1]);
         El=[El; c,E_c];
         

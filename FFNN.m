@@ -20,7 +20,7 @@ btruenom=normalize(Btrue,'zscore');
 X=[atruenom, btruenom];%]; %input vector 
 X=X' ;
 nrInput=size(X,1);
-nrNodesHidden=[100];
+nrNodesHidden=[130];
 nrOutput=1;
 inputrange=[min(X); max(X)]';
 X';

@@ -26,6 +26,7 @@ end
 % mu=ones(size(E))*NNset.trainParam.mu;
 mu_inc=NNset.trainParam.mu_inc;
 mu_dec=NNset.trainParam.mu_dec;
+mu_max=NNset.trainParam.mu_max;
 outputs=calcNNOutput(NNset,X); 
 ekq=Cm'-outputs.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
@@ -180,11 +181,13 @@ function munew=update(mucur)
 
     if E(1)>=E_old(1) 
         if mucur<NNset.trainParam.mu_max
-        munew=mucur+mu_inc;
+        munew=mucur*mu_inc;
+        else
+            munew=mucur;
         end
         accept=0;
     else
-        munew=mucur-mu_dec;
+        munew=mucur*mu_dec;
         accept=1;
         E_old(1)=E(1);
         NNset_old=NNset;

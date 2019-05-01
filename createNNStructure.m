@@ -1,4 +1,4 @@
-function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,epoch,inittype)
+function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,epoch,inittype,y)
 nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
@@ -34,7 +34,7 @@ elseif strcmp(Networktype,'rbf')
              NNset.a{h}=ones(nrNodesHidden(h),1);
         end
         if strcmp(inittype,'random')
-            NNset.a{h}=randn(nrNodesHidden(h),1);
+            NNset.a{h}=randn(nrNodesHidden(h),1)*1e-2;
         end
     end 
     NNset.name{1,1}='rbf';
@@ -58,10 +58,10 @@ end
 NNset.trainParam.epochs=epoch;
 NNset.trainParam.goal=0;
 NNset.trainParam.min_grad=1e-10;
-NNset.trainParam.mu=1e-3; %learning rate 
-NNset.trainParam.mu_dec=0.1; 
+NNset.trainParam.mu=1e-5; %learning rate 
+NNset.trainParam.mu_dec=1e-2; 
 NNset.trainParam.mu_inc=10;
-NNset.trainParam.mu_max=1e10; 
+NNset.trainParam.mu_max=1e5; 
 NNset.trainalg=('trainlm');
 
 end
