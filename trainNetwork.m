@@ -18,10 +18,10 @@ E={};
 mu={};
 for i=1:size(selector,2) 
     if strcmp(selector(i),'wi')||strcmp(selector{i},'c')
-        mu{i}=ones(size(NNset.IW{1},2),1);
+        mu{i}=ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu;
         E{i}=ones(size(NNset.IW{1},2),1)*inf;
     else
-        mu{i}=1;
+        mu{i}=NNset.trainParam.mu;
         E{i}=inf;
     end    
 end
@@ -30,6 +30,7 @@ end
 mu_inc=NNset.trainParam.mu_inc;
 mu_dec=NNset.trainParam.mu_dec;
 mu_max=NNset.trainParam.mu_max;
+trainalg=NNset.trainalg;
 output=calcNNOutput(NNset,X); 
 ekq=Cm'-output.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
@@ -63,32 +64,56 @@ for cycle=1:evaltot
                elseif strcmp(NNset.trainFunct(1),'tansig')
                    J=tansigInputWeight(output,ekq,j);
                end
+               if strcmp(trainalg,'trainlm')
                d=LM(J,Ek,mu{1}(j));
+               elseif strcmp(trainalg,'traingd')
+                   d=mu{1}(j)*J;
+               end
                NNset.IW{1}(:,j)=NNset.IW{1}(:,j)-d;
                Curpar= NNset.IW{1}(:,j);
             elseif strcmp(selector{1},'wo')
                 J=outputWeight(output,ekq); 
+                if strcmp(trainalg,'trainlm')
                 d=LM(J,Ek,mu{1}(j));
+               elseif strcmp(trainalg,'traingd')
+                   d=mu{1}(j)*J;
+               end
                 NNset.LW(1,:)=NNset.LW(1,:)-d';
                 Curpar=NNset.LW(1,:);
             elseif strcmp(selector{1},'a')
                 J=radbasAmplitude(output,ekq);
-                d=LM(J,Ek,mu{1}(j));
+               if strcmp(trainalg,'trainlm')
+               d=LM(J,Ek,mu{1}(j));
+               elseif strcmp(trainalg,'traingd')
+                   d=mu{1}(j)*J;
+               end
                 NNset.a{1}=NNset.a{1}-d; 
                 Curpar=NNset.a{1};
             elseif strcmp(selector{1},'c')
                 J=radbasCenter(output,ekq,j);
-                d=LM(J,Ek,mu{1}(j));
+                if strcmp(trainalg,'trainlm')
+               d=LM(J,Ek,mu{1}(j));
+               elseif strcmp(trainalg,'traingd')
+                   d=mu{1}(j)*J;
+               end
                 NNset.centers{1}(:,j)=NNset.centers{1}(:,j)-d;
                 Curpar=NNset.centers{1}(:,j);
             elseif strcmp(selector{1},'bi')
                 J=inputBias(output,ekq);
-                d=LM(J,Ek,mu{1}(j));
+               if strcmp(trainalg,'trainlm')
+               d=LM(J,Ek,mu{1}(j));
+               elseif strcmp(trainalg,'traingd')
+                   d=mu{1}(j)*J;
+               end
                 NNset.b{1}=NNset.b{1}-d;  
                 Curpar=NNset.b{1};
             elseif strcmp(selector{1},'bo')
                 J=outputBias(ekq);
-                d=LM(J,Ek,mu{1}(j));
+                if strcmp(trainalg,'trainlm')
+               d=LM(J,Ek,mu{1}(j));
+               elseif strcmp(trainalg,'traingd')
+                   d=mu{1}(j)*J;
+               end
                 NNset.b{2}=NNset.b{2}-d;  
                 Curpar= NNset.b{2};
             end
@@ -96,16 +121,24 @@ for cycle=1:evaltot
             ekq1=Cm'-output1.yk;
             Ek1=sum(0.5*ekq1.^2);          
             if (Ek1>Ek)
-                if m<5
+                if m<50
                m=m+1; 
                NNset=NNset_old;
+               if strcmp(trainalg,'trainlm')
                mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_inc;
+               elseif strcmp(trainalg,'traingd')
+                   mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_dec;
+               end
                 else 
                     accept=1;                    
                 end
             else
                 accept=1;
+                 if strcmp(trainalg,'trainlm')  
                  mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_dec;
+                 elseif strcmp(trainalg,'traingd')
+                     mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_inc;
+                 end
             end
             
             plotfig(output)
@@ -276,9 +309,9 @@ end
 %                 plot3(X(1,:)',X(2,:)',Cm,'.b');
                 hold on
                 if accept
-                    plot3(X(1,:),X(2,:),output.yk,'.g')
+                    plot3(X(1,:),X(2,:),output.yk,'g')
                 else
-                    plot3(X(1,:),X(2,:),output.yk,'.')
+                    plot3(X(1,:),X(2,:),output.yk)
                 end
                 xlabel('alpha')
                 ylabel('beta')

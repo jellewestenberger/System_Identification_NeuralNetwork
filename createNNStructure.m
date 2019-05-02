@@ -49,6 +49,8 @@ if strcmp(inittype,'ones')
    
 end
 if strcmp(inittype,'random')
+%     I=((1:nrNodesHidden(h))/nrNodesHidden)*2*pi;
+%     NNset.IW{h}=[sin(I); sin(I)]';
     NNset.IW{h}=randn(nrNodesHidden(h),inputs(h)); %1's for now  INPUT WEIGHTS
     NNset.LW=randn(nrOutput,nrNodesHidden(end));%OUTPUT WEIGHTS (end because only last hidden layer connects to output) 
     

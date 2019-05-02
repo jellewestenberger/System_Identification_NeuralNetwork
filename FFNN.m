@@ -31,13 +31,13 @@ Networktype='ff';
 NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random');
 NetFF.trainalg='trainlm';
 % NetFF.trainParam.mu=1e-7; 
-%  NetFF.trainParam.mu_inc=0;
+ NetFF.trainParam.mu_inc=100;
 %  NetFF.trainParam.mu_dec=0;
 
 NetFF.LW=NetFF.LW/nrNodesHidden(1);
 NetFF.b{1}=min(Cm)*ones(size(NetFF.b{1}));
 % NetFF.b{1}=-1*ones(size(NetFF.b{1}));
-% load 'NNset.mat'
+% load 'NNset.mat'FFNN
 % NetFF=NNset;
 
 [NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'bi','wi','wo'}]);

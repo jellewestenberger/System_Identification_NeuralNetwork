@@ -15,11 +15,11 @@ load_f16data2018;
 % Cm=-1*Cm;
 % X=[alpha_m';beta_m'];
 % Cm=normalize(Cm)
-% atrue_nom=normalize(atrue,'zscore');
-% btrue_nom=normalize(Btrue,'zscore');
-% X=[atrue_nom'; btrue_nom'];%]; %input vector 
+atrue_nom=normalize(atrue,'zscore');
+btrue_nom=normalize(Btrue,'zscore');
+X=[atrue_nom'; btrue_nom'];%]; %input vector 
 % Cm=normalize(Cm,'zscore');
-X=[atrue'; Btrue'];%]; %input vector 
+% X=[atrue'; Btrue'];%]; %input vector 
 
 
 % X=[alpha_m,beta_m];
@@ -28,7 +28,7 @@ X=[atrue'; Btrue'];%]; %input vector
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[150] ;   %add columns to add more hidden layers;
+nrNodesHidden=[130] ;   %add columns to add more hidden layers;
 X=X';
 inputrange=[0.8*min(X); 1.2*max(X)]'; 
 X=X';   
@@ -39,7 +39,7 @@ X=X';
 %  check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
 
 %% Linear regression 
-NNset_lin=createNNStructure(nrInput,[15],nrOutput,inputrange,Networktype,1000,'random',Cm);
+NNset_lin=createNNStructure(nrInput,[30],nrOutput,inputrange,Networktype,1000,'random',Cm);
 % NNset_lin.IW{1}=NNset_lin.IW{1}*1e-1;
 swit=1;
 if swit
@@ -69,11 +69,14 @@ refreshdata
 drawnow
 
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'ones',Cm);
-
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'random',Cm);
+NNset.trainalg='trainlm';
+NNset.trainParam.mu=1e-2;
+NNset.trainParam.mu_inc=10;
+NNset.trainParam.mu_dec=0.1;
 % Cm_norm=normalize(Cm,'zscore');
 
- [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'a','wi','wo','c'});
+ [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'c','a','wi','wo'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:
