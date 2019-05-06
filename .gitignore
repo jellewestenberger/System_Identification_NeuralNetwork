@@ -1,5 +1,9 @@
 matlab demo/
-Report/
-*.pdf
-
 *.asv
+*.aux
+*.bbl
+*.out
+*.blg
+*.log
+*.toc
+*.gz

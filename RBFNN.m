@@ -16,7 +16,7 @@ load_f16data2018;
 % X=[alpha_m';beta_m'];
 % Cm=normalize(Cm)
 atrue_nom=normalize(atrue,'zscore');
-btrue_nom=normalize(Btrue,'zscore');
+btrue_nom=normalize(Btrue,'zscore');    
 X=[atrue_nom'; btrue_nom'];%]; %input vector 
 % Cm=normalize(Cm,'zscore');
 % X=[atrue'; Btrue'];%]; %input vector 
@@ -28,7 +28,7 @@ X=[atrue_nom'; btrue_nom'];%]; %input vector
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[1000] ;   %add columns to add more hidden layers;
+nrNodesHidden=[100] ;   %add columns to add more hidden layers;
 X=X';
 inputrange=[0.8*min(X); 1.2*max(X)]'; 
 X=X';   
