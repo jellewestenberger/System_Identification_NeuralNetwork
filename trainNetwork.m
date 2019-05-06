@@ -303,7 +303,7 @@ end
 
             if size(X,1)==2
     %             set(gcf, 'WindowState','fullscreen')            
-                subplot(121)                        
+                subplot(221)                        
                 trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none')
 %                 hold on
 %                 plot3(X(1,:)',X(2,:)',Cm,'.b');
@@ -316,7 +316,20 @@ end
                 xlabel('alpha')
                 ylabel('beta')
                 title(strcat('evaluation:',{' '},num2str(eval),{' '},'optimizing ',{' '},selector{1},'(',num2str(j),')'))
-                grid()          
+                grid()      
+                view([1,1,1]);
+                
+                subplot(223)    
+                QE=0.5*(output.yk-Cm').^2;
+                trisurf(TRIeval,X(1,:)',X(2,:)',QE,'edgecolor','none')
+%                 plot3(X(1,:),X(2,:),QE,'.')
+                
+                xlabel('alpha')
+                ylabel('beta')
+                title('quadratic error')
+                grid()      
+                view([1,1,1]);
+                
                 subplot(222)            
                 semilogy(El)                  
                  title(strcat('error: ', num2str(El(end))))

@@ -20,7 +20,7 @@ btruenom=normalize(Btrue,'zscore');
 X=[atruenom, btruenom];%]; %input vector 
 X=X' ;
 nrInput=size(X,1);
-nrNodesHidden=[150];
+nrNodesHidden=[100];
 nrOutput=1;
 inputrange=[min(X); max(X)]';
 X';
@@ -29,7 +29,7 @@ Networktype='ff';
 
 
 NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random');
-NetFF.trainalg='trainlm';
+NetFF.trainalg='traingd';
 % NetFF.trainParam.mu=1e-7; 
  NetFF.trainParam.mu_inc=100;
 %  NetFF.trainParam.mu_dec=0;
@@ -40,7 +40,7 @@ NetFF.b{1}=min(Cm)*ones(size(NetFF.b{1}));
 % load 'NNset.mat'FFNN
 % NetFF=NNset;
 
-[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'bi','wi','wo'}]);
+[NetFF,~]=trainNetwork(NetFF,Cm,X,1,[{'bi','wi','wo','bo'}]);
 
 
 
