@@ -28,7 +28,7 @@ X=[atrue_nom'; btrue_nom'];%]; %input vector
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[100] ;   %add columns to add more hidden layers;
+nrNodesHidden=[130] ;   %add columns to add more hidden layers;
 X=X';
 inputrange=[0.8*min(X); 1.2*max(X)]'; 
 X=X';   
@@ -76,7 +76,7 @@ NNset.trainParam.mu_inc=10;
 NNset.trainParam.mu_dec=0.1;
 % Cm_norm=normalize(Cm,'zscore');
 
- [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'c','a','wi','wo'});
+ [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'c','wi','a'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:

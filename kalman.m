@@ -17,7 +17,7 @@ state_est_err=[];
 
 Ex_0=[Vtot(1);0;0;0]; %initial state values
 
-P_0=diag(ones(1,m)); %initial estimate of the covariance matrix
+P_0=0.01*diag(ones(1,m)); %initial estimate of the covariance matrix
 
 %process noise statistics
 Ew= zeros(m,1); %there is no bias in the noise 
@@ -43,12 +43,15 @@ disp('running kalman filter on measurements');
 ti=0;
 tf=dt;
 x_k1k1=Ex_0;
-z_k1k1=calc_MeasurementMat(ti,x_k1k1,v_k(:,1));
+z_k1k1=calc_MeasurementMat(x_k1k1,v_k(:,1));
 XX_k1k1(:,1)=x_k1k1;
 z_pred(:,1)=z_k1k1;
 P_k1k1=P_0;
 
+%% Check whether the Kalman filter will converge
+check_observability
 
+%% Start Kalman filter 
 for k=2:N
 
 %prediction x_k+1|k
@@ -56,7 +59,7 @@ for k=2:N
 
 %predicted output z_k+1|k
 
-z_kk1=calc_MeasurementMat(ti,x_kk_1,v_k(:,k));
+z_kk1=calc_MeasurementMat(x_kk_1,v_k(:,k));
 %pertubation of state 
 Fx=zeros(m,m); %The accelerometer values do not depend on the state values so Fx is zero.
 
@@ -83,17 +86,7 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
 
             % Construct the Jacobian H = d/dx(h(x))) with h(x) the observation model transition matrix 
             Hx       = calc_Jacob_out(eta1);
-            
-%             
-            % Check observability of state
-            if (k == 2 && itts == 1)
-                rankHF = kf_calcObsRank(Hx, Fx);
-                if (rankHF < m)
-                    warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, m);
-                else
-                    disp('The state is observable (KF converges)');
-                end
-            end
+           
             
             % The innovation matrix
             Ve  = (Hx*P_kk_1*Hx' + R);
@@ -101,7 +94,7 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
             % calculate the Kalman gain matrix
             K       = P_kk_1 * Hx' / Ve;
             % new observation state
-            z_p     = calc_MeasurementMat(ti,eta1,v_k(:,k)) ;%fpr_calcYm(eta1, u);
+            z_p     = calc_MeasurementMat(eta1,v_k(:,k)) ;%fpr_calcYm(eta1, u);
 
             eta2    = x_kk_1 + K * (Z_k(:,k) - z_p - Hx*(x_kk_1 - eta1));
             err     = norm((eta2 - eta1), inf) / norm(eta1, inf);
@@ -135,14 +128,19 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
     %covariance correction
     P_k1k1=(eye(m)-K*Hx)*P_kk_1*(eye(m)-K*Hx)'+K*R*K';
     %corrected measurement
-    z_k1k1=calc_MeasurementMat(ti,x_k1k1,v_k(:,k));
+    z_k1k1=calc_MeasurementMat(x_k1k1,v_k(:,k));
     z_pred(:,k)=z_k1k1;
     state_est_err=[state_est_err, (x_k1k1-x_kk_1)];
 end
+
+
 %     
-atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,:));  
-Btrue=(z_pred(2,:)-v_k(2,:));
-Vtrue=(z_pred(3,:)-v_k(3,:));
+% atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,:));  
+% Btrue=(z_pred(2,:)-v_k(2,:));
+% Vtrue=(z_pred(3,:)-v_k(3,:));
+atrue=(z_pred(1,:))./(1+XX_k1k1(4,:));  
+Btrue=(z_pred(2,:));
+Vtrue=(z_pred(3,:));
 %NOT SURE IF NEED TO BE REMOVED FROM TRUE MEASUREMENTS OR PREDICTED
 %MEASUREMENTS 
 % atrue=(alpha_m'-v_k(1,:))./(1+XX_k1k1(4,:));

@@ -1,6 +1,6 @@
 %Measurement matrix
 
-function mat=calc_MeasurementMat(t,X,V)
+function mat=calc_MeasurementMat(X,V)
 
 u=X(1);
 v=X(2);

@@ -35,7 +35,9 @@ output=calcNNOutput(NNset,X);
 ekq=Cm'-output.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
 El=[sum(0.5*ekq.^2)];
+El2=[];
 cyclel=[];
+evl=[eval];
 figure
 evaltot=NNset.trainParam.epochs;
 dE=inf;
@@ -44,7 +46,7 @@ for cycle=1:evaltot
     cyclel=[cyclel, cycle];   
       
         NNset_old=NNset;
-        output=calcNNOutput(NNset,X);
+%         output=calcNNOutput(NNset,X);
         ekq=Cm'-output.yk;
         Ek=sum(0.5*ekq.^2);
         for p=1:length(selector)
@@ -119,9 +121,10 @@ for cycle=1:evaltot
             end
             output1=calcNNOutput(NNset,X);
             ekq1=Cm'-output1.yk;
-            Ek1=sum(0.5*ekq1.^2);          
+            Ek1=sum(0.5*ekq1.^2); 
+            El2=[El2;Ek1];
             if (Ek1>Ek)
-                if m<50
+                if m<5
                m=m+1; 
                NNset=NNset_old;
                if strcmp(trainalg,'trainlm')
@@ -148,7 +151,9 @@ for cycle=1:evaltot
                 ekq=ekq1;
                 Ek=Ek1;
                 
-                E{1}(j)=Ek;                 
+                E{1}(j)=Ek;   
+                evl=[evl;eval-1];     
+                El=[El,Ek];
             end
             
             end
@@ -161,8 +166,7 @@ for cycle=1:evaltot
         
         end
 
-         
-    El=[El,Ek];
+    
     if El(end)<minerror
         minerror=El(end);
         NNsetmin=NNset;       
@@ -330,23 +334,27 @@ end
                 grid()      
                 view([1,1,1]);
                 
-                subplot(222)            
-                semilogy(El)                  
+                subplot(122)            
+                semilogy(evl,El,'Linewidth',2)          
+                hold on
+                semilogy(El2);
+                hold on 
+                semilogy(El2, '.k');
                  title(strcat('error: ', num2str(El(end))))
-                 xlabel('optimization cycle')
+                 xlabel('Evaluation')
                  ylabel('error value');
                  grid();
-                 subplot(224)
-                 if accept
-                    plot(Curpar,'.g')
-                 else
-                      plot(Curpar,'.b')
-                 end
-                 xlim([1,size(NNset.IW{1},1)]);
-                title(selector{1})
-                xlabel('Neuron')
-                ylabel('Gain')
-                grid();
+%                  subplot(224)
+%                  if accept
+%                     plot(Curpar,'.g')
+%                  else
+%                       plot(Curpar,'.b')
+%                  end
+%                  xlim([1,size(NNset.IW{1},1)]);
+%                 title(selector{1})
+%                 xlabel('Neuron')
+%                 ylabel('Gain')
+%                 grid();
             else
 
             plot(output.yk)
