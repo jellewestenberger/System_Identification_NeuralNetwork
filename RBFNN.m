@@ -28,7 +28,7 @@ X=[atrue_nom'; btrue_nom'];%]; %input vector
 Networktype='rbf';      %choose network type: radial basis function (rbf) or feedforward (ff)
 nrInput=size(X,1);      %number of inputs being used
 nrOutput=1;             %Number of outputs
-nrNodesHidden=[130] ;   %add columns to add more hidden layers;
+nrNodesHidden=[270] ;   %add columns to add more hidden layers;
 X=X';
 inputrange=[0.8*min(X); 1.2*max(X)]'; 
 X=X';   
@@ -60,6 +60,7 @@ result=calcNNOutput(NNset_lin,X);
 E=sum(result.yk'-Cm);
 TRIeval = delaunayn(X(1:2,:)');
 
+figure(1)
 clf
 trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
 hold on
@@ -70,13 +71,13 @@ drawnow
 
 %% Levenberg Marquard
 NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,200,'random',Cm);
-NNset.trainalg='trainlm';
+NNset.trainalg='traingd';
 NNset.trainParam.mu=1e-2;
-NNset.trainParam.mu_inc=10;
+NNset.trainParam.mu_inc=5;
 NNset.trainParam.mu_dec=0.1;
 % Cm_norm=normalize(Cm,'zscore');
 
- [NNset, ~]=trainNetwork(NNset,Cm,X,1,{'c','wi','a'});
+[NNset, ~]=trainNetwork(NNset,Cm,X,1,{'c','wi','a'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:
@@ -94,7 +95,7 @@ while abs(c-d)>=1
         i=find(El(:,1)==c);
         E_c=El(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones',Cm);  
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,20,'random',Cm);  
         [~,E_c]=trainNetwork(NN_c,Cm,X,1,{'wo','wi','a','c'});
         El=[El; c,E_c];
     end   
@@ -102,7 +103,7 @@ while abs(c-d)>=1
         i=find(El(:,1)==d);
         E_d=El(i,2);
     else
-        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,100,'ones',Cm);  
+        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,20,'random',Cm);  
         [~,E_d]=trainNetwork(NN_d,Cm,X,1,{'wo','wi','a','c'});
         El=[El; d,E_d];
     end   
@@ -123,7 +124,7 @@ if size(find(El(:,1)==c),1)==1
         i=find(El(:,1)==c);
         E_c=El(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,100,'ones',Cm);  
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,20,'random',Cm);  
         [~,E_c]=trainNetwork(NN_c,Cm,X,1,[1,1,1,1]);
         El=[El; c,E_c];
         

@@ -139,6 +139,12 @@ end
 % Btrue=(z_pred(2,:)-v_k(2,:));
 % Vtrue=(z_pred(3,:)-v_k(3,:));
 atrue=(z_pred(1,:))./(1+XX_k1k1(4,:));  
+% atrue2=atan(XX_k1k1(3,:)./XX_k1k1(1,:));
+% figure
+% plot(atrue)
+% hold on
+% plot(atrue2)
+
 Btrue=(z_pred(2,:));
 Vtrue=(z_pred(3,:));
 %NOT SURE IF NEED TO BE REMOVED FROM TRUE MEASUREMENTS OR PREDICTED
@@ -168,7 +174,7 @@ figure
 plot(T,z_pred(2,:));
 hold on
 plot(T,beta_m);
-hold on
+% hold on
 plot(T,Btrue);
 title('beta');
 legend('predicted output','measured output','estimated true beta');

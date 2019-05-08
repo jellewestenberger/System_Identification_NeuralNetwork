@@ -1,5 +1,5 @@
 function [NNsetmin, minerror]=trainNetwork(NNset,Cm,X,plotf,selector)
-close all
+% close all
 % atrue=X(1,:);
 % Btrue=X(2,:);
 % Vtrue=X(3,:);
@@ -38,10 +38,11 @@ El=[sum(0.5*ekq.^2)];
 El2=[];
 cyclel=[];
 evl=[eval];
-figure
+
 evaltot=NNset.trainParam.epochs;
 dE=inf;
 for cycle=1:evaltot
+%     disp(num2str(cycle));
     % disp(E(eval_par(end))) %display newest error 
     cyclel=[cyclel, cycle];   
       
@@ -144,7 +145,7 @@ for cycle=1:evaltot
                  end
             end
             
-            plotfig(output)
+            plotfig(output,1)
             if accept
                 NNset_old=NNset;
                 output=output1;
@@ -301,10 +302,13 @@ end
     end
     
 
-    function plotfig(output)
-          clf
+    function plotfig(output,scroll)
+          
         if plotf
-
+            if not(ishandle(2))
+                figure(2)
+            end
+            clf(2)
             if size(X,1)==2
     %             set(gcf, 'WindowState','fullscreen')            
                 subplot(221)                        
@@ -333,7 +337,7 @@ end
                 title('quadratic error')
                 grid()      
                 view([1,1,1]);
-                
+                if eval<=50 || not(scroll)
                 subplot(122)            
                 semilogy(evl,El,'Linewidth',2)          
                 hold on
@@ -344,6 +348,23 @@ end
                  xlabel('Evaluation')
                  ylabel('error value');
                  grid();
+                 hold on
+                else
+                    subplot(122)
+                    semilogy(evl(evl>(evl(end)-50)),El(evl>(evl(end)-50)))
+                    hold on 
+                    semilogy(eval-50:eval-1,El2(end-49:end));
+                    hold on 
+                    semilogy(eval-50:eval-1,El2(end-49:end), '.k');
+                    xlim([eval-50,eval]);
+                    ylim([min(El(evl>(evl(end)-50))),max(El(evl>(evl(end)-50)))]);
+                   
+                    title(strcat('error: ', num2str(El(end))))
+                    xlabel('Evaluation')
+                    ylabel('error value');
+                    grid();
+                end
+               
 %                  subplot(224)
 %                  if accept
 %                     plot(Curpar,'.g')
