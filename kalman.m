@@ -55,7 +55,11 @@ check_observability
 for k=2:N
 
 %prediction x_k+1|k
-[ti,x_kk_1]=integrator(x_k1k1,D_x(:,k-1),ti,dt); %integrate the states (currently done in single steps using the perfect measurements)
+[ti,x_kk_1]=ode45(@(t,x) calc_f(t,x,D_x(:,k-1)),[ti ti+tf],x_k1k1);
+ti=ti(end);
+x_kk_1=x_kk_1(end,:)';
+% [ti,x_kk_1]=integrator(x_k1k1,D_x(:,k-1),ti,dt); %integrate the states (currently done in single steps using the perfect measurements)
+
 
 %predicted output z_k+1|k
 
@@ -107,15 +111,7 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
     %if not IEKF
     %pertubation of measurements
     Hx=calc_Jacob_out(x_kk_1);
-    %Check observability 
-    if k==2
-    rankHF = kf_calcObsRank(Hx, Fx);
-                if (rankHF < n)
-                    warning('The current state is not observable; rank of Observability Matrix is %d, should be %d', rankHF, n);
-                else
-                    disp('The state is observable (KF converges)');
-                end
-    end
+  
     
     %kalman gain
     K=P_kk_1*Hx'*(Hx*P_kk_1*Hx'+R)^(-1);
@@ -139,7 +135,16 @@ end
 % Btrue=(z_pred(2,:)-v_k(2,:));
 % Vtrue=(z_pred(3,:)-v_k(3,:));
 atrue=(z_pred(1,:))./(1+XX_k1k1(4,:));  
-% atrue2=atan(XX_k1k1(3,:)./XX_k1k1(1,:));
+atrue2=atan(XX_k1k1(3,:)./XX_k1k1(1,:));
+figure
+diff=atrue-atrue2;
+plot(atrue)
+hold on 
+plot(atrue2)
+legend('from upwash','from accelerometer')
+grid()
+
+
 % figure
 % plot(atrue)
 % hold on
