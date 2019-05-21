@@ -5,7 +5,8 @@ function [NNsetmin, minerror]=trainNetwork(NNset,Cm,X,plotf,selector)
 % Vtrue=X(3,:);
 global eval 
 eval=0;
-%calculate dE/d Wjk   (Wjk = output weight);
+plotf=1;
+optimizeorder=1;
 eta=0.0000001;
 disp('Number of Neurons:');
 disp(length(NNset.LW));
@@ -18,15 +19,19 @@ E={};
 mu={};
 for i=1:size(selector,2) 
     if strcmp(selector(i),'wi')||strcmp(selector{i},'c')
-        mu{i}=ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu;
-        E{i}=ones(size(NNset.IW{1},2),1)*inf;
+        mu{i}=mat2cell(ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu,[1,1]);
+        E{i}=mat2cell(ones(size(NNset.IW{1},2),1)*inf,[1,1]);
+%         dE{i}=mat2cell(zeros(size(NNset.IW{1},2),1),[1,1]);
     else
-        mu{i}=NNset.trainParam.mu;
-        E{i}=inf;
+        mu{i}={NNset.trainParam.mu};
+        E{i}={inf};
+%         dE{i}={0};
     end    
+    
 end
  %log performance per parameter
 % mu=ones(size(E))*NNset.trainParam.mu;
+
 mu_inc=NNset.trainParam.mu_inc;
 mu_dec=NNset.trainParam.mu_dec;
 mu_max=NNset.trainParam.mu_max;
@@ -38,10 +43,10 @@ El=[sum(0.5*ekq.^2)];
 El2=[];
 cyclel=[];
 evl=[eval];
-
+cycle=1;
 evaltot=NNset.trainParam.epochs;
-dE=inf;
-for cycle=1:evaltot
+dE=ones(size(selector))*-1e-9;
+while eval<evaltot
 %     disp(num2str(cycle));
     % disp(E(eval_par(end))) %display newest error 
     cyclel=[cyclel, cycle];   
@@ -51,6 +56,7 @@ for cycle=1:evaltot
         ekq=Cm'-output.yk;
         Ek=sum(0.5*ekq.^2);
         for p=1:length(selector)
+            
             for j = 1:length(mu{1})            
 %             NNset_old=NNset; 
 %             
@@ -68,54 +74,54 @@ for cycle=1:evaltot
                    J=tansigInputWeight(output,ekq,j);
                end
                if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}(j));
+               d=LM(J,Ek,mu{1}{j});
                elseif strcmp(trainalg,'traingd')
-                   d=mu{1}(j)*J;
+                   d=mu{1}{j}*J;
                end
                NNset.IW{1}(:,j)=NNset.IW{1}(:,j)-d;
                Curpar= NNset.IW{1}(:,j);
             elseif strcmp(selector{1},'wo')
                 J=outputWeight(output,ekq); 
                 if strcmp(trainalg,'trainlm')
-                d=LM(J,Ek,mu{1}(j));
+                d=LM(J,Ek,mu{1}{j});
                elseif strcmp(trainalg,'traingd')
-                   d=mu{1}(j)*J;
+                   d=mu{1}{j}*J;
                end
                 NNset.LW(1,:)=NNset.LW(1,:)-d';
                 Curpar=NNset.LW(1,:);
             elseif strcmp(selector{1},'a')
                 J=radbasAmplitude(output,ekq);
                if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}(j));
+               d=LM(J,Ek,mu{1}{j});
                elseif strcmp(trainalg,'traingd')
-                   d=mu{1}(j)*J;
+                   d=mu{1}{j}*J;
                end
                 NNset.a{1}=NNset.a{1}-d; 
                 Curpar=NNset.a{1};
             elseif strcmp(selector{1},'c')
                 J=radbasCenter(output,ekq,j);
                 if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}(j));
+               d=LM(J,Ek,mu{1}{j});
                elseif strcmp(trainalg,'traingd')
-                   d=mu{1}(j)*J;
+                   d=mu{1}{j}*J;
                end
                 NNset.centers{1}(:,j)=NNset.centers{1}(:,j)-d;
                 Curpar=NNset.centers{1}(:,j);
             elseif strcmp(selector{1},'bi')
                 J=inputBias(output,ekq);
                if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}(j));
+               d=LM(J,Ek,mu{1}{j});
                elseif strcmp(trainalg,'traingd')
-                   d=mu{1}(j)*J;
+                   d=mu{1}{j}*J;
                end
                 NNset.b{1}=NNset.b{1}-d;  
                 Curpar=NNset.b{1};
             elseif strcmp(selector{1},'bo')
                 J=outputBias(ekq);
                 if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}(j));
+               d=LM(J,Ek,mu{1}{j});
                elseif strcmp(trainalg,'traingd')
-                   d=mu{1}(j)*J;
+                   d=mu{1}{j}*J;
                end
                 NNset.b{2}=NNset.b{2}-d;  
                 Curpar= NNset.b{2};
@@ -129,9 +135,9 @@ for cycle=1:evaltot
                m=m+1; 
                NNset=NNset_old;
                if strcmp(trainalg,'trainlm')
-               mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_inc;
+               mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
                elseif strcmp(trainalg,'traingd')
-                   mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_dec;
+                   mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
                end
                 else 
                     accept=1;                    
@@ -139,9 +145,9 @@ for cycle=1:evaltot
             else
                 accept=1;
                  if strcmp(trainalg,'trainlm')  
-                 mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_dec;
+                 mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
                  elseif strcmp(trainalg,'traingd')
-                     mu{1}(j)=mu{1}(j)*NNset.trainParam.mu_inc;
+                     mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
                  end
             end
             
@@ -150,33 +156,50 @@ for cycle=1:evaltot
                 NNset_old=NNset;
                 output=output1;
                 ekq=ekq1;
+                if (Ek1-Ek)<0 && (Ek1-Ek)<1e-2*min(dE) 
+                dE(1)=(Ek1-Ek);
+                else
+                 dE(1)=1e-1*min(dE);
+                end
                 Ek=Ek1;
                 
-                E{1}(j)=Ek;   
+                E{1}{j}=Ek;   
                 evl=[evl;eval-1];     
                 El=[El,Ek];
             end
             
             end
             end
-            selector=circshift(selector,-1,2);    
-            mu=circshift(mu,-1,2)   ;
-            E=circshift(E,-1,2);
+            if cycle>4 && optimizeorder
+                [~,index]=min(dE);
+                shiftind=-(index-1);
+                dumm=2;
+            else
+                index=2;
+                shiftind=-1;
+            end
+            fprintf('next parameter: %s \n',selector{index})
+            selector=circshift(selector,shiftind,2);    
+            mu=circshift(mu,shiftind,2)   ;
+            E=circshift(E,shiftind,2);
+            dE=circshift(dE,shiftind,2);
+            
             
 %             E_old=circshift(E_old,-1,2);
         
         end
-
+    cycle=cycle+1;
     
     if El(end)<minerror
         minerror=El(end);
         NNsetmin=NNset;       
     end
+fprintf('min error: %f, gradient: %f \n',minerror,min(dE))
 disp(minerror)    
 end
 
-disp('min error:')
-disp(minerror)
+% disp('min error:')
+% disp(minerror)
 
 
 
