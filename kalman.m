@@ -163,6 +163,7 @@ T=[0:dt:(10000*dt)];
 
 if plotflag == 'y'
 figure
+subplot(211)
 plot(T,z_pred(1,:));
 hold on
 plot(T,alpha_m);
@@ -174,13 +175,16 @@ title('alpha');
 legend('predicted output','measured output','estimated true alpha', 'estimated upwash coeficient');
 xlabel('time [s]')
 ylabel('angle of attack [rad]')
+subplot(212)
+plot(T,(z_pred(1,:)'-alpha_m))
+grid()
 
 figure
 plot(T,z_pred(2,:));
 hold on
 plot(T,beta_m);
 % hold on
-plot(T,Btrue);
+% plot(T,Btrue);
 title('beta');
 legend('predicted output','measured output','estimated true beta');
 xlabel('time [s]')

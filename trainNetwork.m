@@ -178,7 +178,7 @@ while eval<evaltot
                 index=2;
                 shiftind=-1;
             end
-            fprintf('next parameter: %s \n',selector{index})
+%             fprintf('next parameter: %s \n',selector{index})
             selector=circshift(selector,shiftind,2);    
             mu=circshift(mu,shiftind,2)   ;
             E=circshift(E,shiftind,2);
@@ -195,7 +195,7 @@ while eval<evaltot
         NNsetmin=NNset;       
     end
 fprintf('min error: %f, gradient: %f \n',minerror,min(dE))
-disp(minerror)    
+% disp(minerror)    
 end
 
 % disp('min error:')
@@ -374,7 +374,7 @@ end
                  hold on
                 else
                     subplot(122)
-                    semilogy(evl(evl>(evl(end)-50)),El(evl>(evl(end)-50)))
+                    semilogy(evl(evl>(evl(end)-50)),El(evl>(evl(end)-50)),'Linewidth',2)
                     hold on 
                     semilogy(eval-50:eval-1,El2(end-49:end));
                     hold on 
