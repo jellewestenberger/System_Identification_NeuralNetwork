@@ -6,7 +6,7 @@ function [NNsetmin, minerror]=trainNetwork(NNset,Cm,X,plotf,selector)
 global eval 
 eval=0;
 plotf=1;
-optimizeorder=1;
+optimizeorder=0;
 eta=0.0000001;
 disp('Number of Neurons:');
 disp(length(NNset.LW));
@@ -361,7 +361,7 @@ end
                 grid()      
                 view([1,1,1]);
                 if eval<=50 || not(scroll)
-                subplot(122)            
+                subplot(224)            
                 semilogy(evl,El,'Linewidth',2)          
                 hold on
                 semilogy(El2);
@@ -373,7 +373,7 @@ end
                  grid();
                  hold on
                 else
-                    subplot(122)
+                    subplot(224)
                     semilogy(evl(evl>(evl(end)-50)),El(evl>(evl(end)-50)),'Linewidth',2)
                     hold on 
                     semilogy(eval-50:eval-1,El2(end-49:end));
@@ -387,6 +387,12 @@ end
                     ylabel('error value');
                     grid();
                 end
+                subplot(222)
+                semilogy(evl,El,'Linewidth',2)
+                title(strcat('error: ', num2str(El(end))))
+                xlabel('Evaluation')
+                ylabel('error value');
+                grid()
                
 %                  subplot(224)
 %                  if accept
