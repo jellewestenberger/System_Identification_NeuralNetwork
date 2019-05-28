@@ -14,7 +14,7 @@ atrue=Z_k(:,1);
 Btrue=Z_k(:,2);
 
 %% Split data into training set and validation set: 
-fr_train=0.6;
+fr_train=0.95;
 fr_val=1-fr_train;
 [X_train,X_val,Y_train,Y_val]=splitData([atrue,Btrue],Cm,fr_train,fr_val,1);
 

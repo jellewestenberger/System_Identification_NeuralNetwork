@@ -1,6 +1,19 @@
 clear all
 close all
 load_f16data2018
+%% Test to see what happens if you reverse the measurements
+% alpha_m=alpha_m(end:-1:1);
+% Au=Au(end:-1:1);
+% Aw=Aw(end:-1:1);
+% beta_m=beta_m(end:-1:1);
+% Cm=Cm(end:-1:1);
+% 
+% Vtot=Vtot(end:-1:1);
+% Z_k=Z_k(end:-1:1,:);
+% U_k=U_k(end:-1:1,:)*-1;
+
+
+
 plotflag='y';
 %% --------EXTENDED KALMAN FILTER-------
 epsilon=1e-10;
@@ -15,7 +28,7 @@ m=4; %state dimension
 n=3; %output dimension
 state_est_err=[];
 
-Ex_0=[Vtot(1);0;0;0]; %initial state values
+x_0=[Vtot(1);0;0;0]; %initial state values
 
 P_0=0.01*diag(ones(1,m)); %initial estimate of the covariance matrix
 
@@ -42,7 +55,7 @@ z_pred=zeros(n,N);
 disp('running kalman filter on measurements');
 ti=0;
 tf=dt;
-x_k1k1=Ex_0;
+x_k1k1=x_0;
 z_k1k1=calc_MeasurementMat(x_k1k1,v_k(:,1));
 XX_k1k1(:,1)=x_k1k1;
 z_pred(:,1)=z_k1k1;
@@ -131,10 +144,10 @@ end
 
 
 %     
-% atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,:));  
+% atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,e));  
 % Btrue=(z_pred(2,:)-v_k(2,:));
 % Vtrue=(z_pred(3,:)-v_k(3,:));
-atrue=(z_pred(1,:))./(1+XX_k1k1(4,:));  
+atrue=(z_pred(1,:))./(1+XX_k1k1(4,end));  
 atrue2=atan(XX_k1k1(3,:)./XX_k1k1(1,:));
 figure
 diff=atrue-atrue2;
@@ -162,8 +175,9 @@ Vtrue=(z_pred(3,:));
 T=[0:dt:(10000*dt)];
 
 if plotflag == 'y'
-figure
-subplot(211)
+figure()
+% subplot(211)
+
 plot(T,z_pred(1,:));
 hold on
 plot(T,alpha_m);
@@ -171,13 +185,17 @@ hold on
 plot(T,atrue);
 hold on
 plot(T,XX_k1k1(4,:));
+pbaspect([2 1 1])
 title('alpha');
-legend('predicted output','measured output','estimated true alpha', 'estimated upwash coeficient');
+grid()
+l=legend('Approximated alpha','Measured alpha','reconstructed true alpha', 'estimated upwash coeficient', 'Location','northwest');
+l.FontSize=8;
 xlabel('time [s]')
 ylabel('angle of attack [rad]')
-subplot(212)
-plot(T,(z_pred(1,:)'-alpha_m))
-grid()
+saveas(gcf,'Report/plots/alpharecon.eps','epsc')
+% subplot(212)
+% plot(T,(z_pred(1,:)'-alpha_m))
+% grid()
 
 figure
 plot(T,z_pred(2,:));
@@ -230,7 +248,15 @@ subplot(224)
 plot(T(2:end),state_est_err(4,:))
 title('Ca')
 
-
+figure()
+plot(T,XX_k1k1(4,:))
+grid()
+xlabel('Time [s]')
+ylabel('C_{\alpha_{up}}[-]')
+title('Estimated Upwash coefficient')
+pbaspect([4 1 1])
+ylim([min(XX_k1k1(4,:)) max(XX_k1k1(4,:))*1.1])
+saveas(gcf,'Report/plots/caup.eps','epsc')
 
 end
 
