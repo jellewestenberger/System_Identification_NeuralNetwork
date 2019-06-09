@@ -5,7 +5,10 @@ if ran
    X=X(i,:);
    Y=Y(i);   
 end
-
+% i_total=1:N;
+% i_train=1:floor(1/fr_train):N;
+% i_val=setdiff(i_total,i_train);
+% 
 i_train=floor(fr_train*N);
 i_val=floor(fr_val*N)+i_train;
 i_val=i_train+1:i_val+1;
