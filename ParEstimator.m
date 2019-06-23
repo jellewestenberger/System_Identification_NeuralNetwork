@@ -12,7 +12,7 @@ load('Vtrue.mat');
 load('T.mat');
 atrue=Z_k(:,1);
 Btrue=Z_k(:,2);
-plotf=1;
+plotf=1;  %plotflag
 set(0, 'DefaultAxesTickLabelInterpreter','latex')
     set(0, 'DefaultLegendInterpreter','latex')
 if plotf
@@ -24,7 +24,7 @@ end
 
 
 %% Split data into training set and validation set: 
-fr_train=0.9;
+fr_train=0.7;
 fr_val=1-fr_train;
 [X_train,X_val,Y_train,Y_val]=splitData([atrue,Btrue],Cm,fr_train,fr_val,1);
 X_train=[atrue Btrue];
@@ -56,7 +56,7 @@ order=order+1;
         trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
 
         refreshdata
-        grid();
+        grid on
         title(strcat('Simple, E=',num2str(errnew)))
         legend('Linear regression model','full dataset');
         pause(0.1)
@@ -88,7 +88,7 @@ errl2=[errl2;errnew];
         trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
 
         refreshdata
-        grid();
+        grid on;
         title(strcat('sumorder, E=',num2str(errnew)));
         legend('Linear regression model','full dataset');
         pause(0.1)
@@ -108,13 +108,13 @@ E_train=sum(res_train.^2);
         hold on
         trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
         
-        grid();
+        grid on;
         title(strcat('sumorder, E=',num2str(err_train)));
         legend('Linear regression model','full dataset'); 
         refreshdata
         
  end
-
+orderselect=order; %Safe ideal order for validation later on;
  
  
 %% Linear Regression problem [allorder]
@@ -141,7 +141,7 @@ errl3=[errl3;errnew];
         trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
 
         refreshdata
-        grid();
+        grid on;
         title(strcat('allorder, E=',num2str(errnew)));
         legend('Linear regression model','full dataset');
         pause(0.1)
@@ -184,32 +184,40 @@ legend('$C_m=\sum_{i=0}^{n} \theta_i\left(\alpha+\beta\right)^i $','$C_m=\sum_{i
 title('Influence of polynomial order on accuracy of fit');
 saveas(gcf,'Report/plots/orderinfl.eps','epsc')
 %% Model-error based validation 
-[A_val,~]=OLSQ_est(order,X_val,Y_val,'sumorder');
+% Resiudal should be zero-mean white noise
+% residuals should have constant variance and be uncorrelated
+
+
+[A_val,~]=OLSQ_est(orderselect,X_val,Y_val,'sumorder');
 
 estimatedCm_val=A_val*theta_train;
 % estimatedCm_val=calc_poly_output(est,X_val); %calculate output of polynomial with parameters found from training dataset
 res_val=Y_val-estimatedCm_val;
-err_val=sum(res_val.^2);
+err_val=sum(res_val.^2);res_val
 [err_autoCorr,lags]=xcorr(res_val-mean(res_val));
 err_autoCorr=err_autoCorr/max(err_autoCorr);
 
+if plotf
+    
 figure
 plot3(X_val(:,1),X_val(:,2),estimatedCm_val, '.k');
 hold on
 trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
 legend('Linear regression validation','Full dataset')
-grid()
+grid on 
 figure
 plot(res_val);
 hold on 
 plot([0,length(res_val)],[mean(res_val),mean(res_val)])
+grid on 
 figure
 plot(lags,err_autoCorr);
 hold on
-plot(lags([1,end]),[1.96/sqrt(length(res_val)),1.96/sqrt(length(res_val))],'--');
+plot(lags([1,end]),[2/sqrt(length(err_autoCorr)),2/sqrt(length(err_autoCorr))],'--k');
 hold on
-plot(lags([1,end]),[-1.96/sqrt(length(res_val)),-1.96/sqrt(length(res_val))],'--');
-
+plot(lags([1,end]),[-2/sqrt(length(err_autoCorr)),-2/sqrt(length(err_autoCorr))],'--k');
+grid on 
+end
 
 
 
