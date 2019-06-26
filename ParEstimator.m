@@ -27,8 +27,8 @@ end
 fr_train=0.7;
 fr_val=1-fr_train;
 [X_train,X_val,Y_train,Y_val]=splitData([atrue,Btrue],Cm,fr_train,fr_val,1);
-X_train=[atrue Btrue];
-Y_train=Cm;
+% X_train=[atrue Btrue];
+% Y_train=Cm;
 %% Linear Regression problem [SIMPLE]
 order=0; %polynomial order
 errold=inf;
@@ -62,7 +62,14 @@ order=order+1;
         pause(0.1)
     end
 end
+ordersimple=order-2;
+[A,theta]=OLSQ_est(ordersimple,X_train,Y_train,'simple');
+% test=A*theta;
+% test=Y_train-test;
+% test=sum(test.^2);
 
+A_simple=A;
+theta_simple=theta;
 
 %% Linear Regression problem [sumorder]
 order=0; %polynomial order
@@ -96,6 +103,7 @@ errl2=[errl2;errnew];
     order=order+1;
 end
 order=order-2;
+ordersum=order;
 err_train=errold;
 [A,theta_train]=OLSQ_est(order,X_train(:,1:2),Y_train,'sumorder');
 estimatedCm_train=A*theta_train;
@@ -115,7 +123,8 @@ E_train=sum(res_train.^2);
         
  end
 orderselect=order; %Safe ideal order for validation later on;
- 
+theta_sumorder=theta;
+A_sumorder=A;
  
 %% Linear Regression problem [allorder]
 order=0; %polynomial order
@@ -149,8 +158,11 @@ errl3=[errl3;errnew];
     order=order+1;
 end
 order=order-2;
+orderallorder=order;
 err_train=errold;
 [A,theta_train3]=OLSQ_est(order,X_train(:,1:2),Y_train,'allorder');
+A_allroder=A;
+theta_allorder=theta_train3;
 estimatedCm_train=A*theta_train3;
 res_train=(Y_train-estimatedCm);
 E_train=sum(res_train.^2);
@@ -183,6 +195,12 @@ ylabel('Accuracy of fit [-]^2')
 legend('$C_m=\sum_{i=0}^{n} \theta_i\left(\alpha+\beta\right)^i $','$C_m=\sum_{i+j=n}^n \theta_{i,j}\alpha^i\beta^j$','$C_m=\sum_{i,j}^n \theta_{i,j}\alpha^i\beta^j$','Interpreter','latex')
 title('Influence of polynomial order on accuracy of fit');
 saveas(gcf,'Report/plots/orderinfl.eps','epsc')
+thetatable.simple=theta_simple;
+thetatable.sumorder=theta_sumorder;
+thetatable.allorder=theta_allorder;
+
+write2table(thetatable,[ordersimple,ordersum,orderallorder],[min(errl1),min(errl2),min(errl3)]); %write files to latex table for report
+
 %% Model-error based validation 
 % Resiudal should be zero-mean white noise
 % residuals should have constant variance and be uncorrelated
@@ -193,7 +211,7 @@ saveas(gcf,'Report/plots/orderinfl.eps','epsc')
 estimatedCm_val=A_val*theta_train;
 % estimatedCm_val=calc_poly_output(est,X_val); %calculate output of polynomial with parameters found from training dataset
 res_val=Y_val-estimatedCm_val;
-err_val=sum(res_val.^2);res_val
+err_val=sum(res_val.^2);
 [err_autoCorr,lags]=xcorr(res_val-mean(res_val));
 err_autoCorr=err_autoCorr/max(err_autoCorr);
 
