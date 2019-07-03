@@ -30,85 +30,18 @@ fr_val=1-fr_train;
 % X_train=[atrue Btrue];
 % Y_train=Cm;
 %% Linear Regression problem [SIMPLE]
-order=0; %polynomial order
-errold=inf;
-errnew=1e30;
-errl1=[];
-%Increase order until error increases (due to floating point inaccuracies) 
-if plotf
-    figure
-end
-while errnew<errold
-errold=errnew;
-[A,theta]=OLSQ_est(order,X_train,Y_train,'simple'); %use training set
-estimatedCm=A*theta;
-resi=Y_train-estimatedCm;
-errnew=sum(resi.^2);
-errl1=[errl1;errnew];
-order=order+1;
 
+[ordersimple,errl1]=find_optimal_order_OLS(X_train,Y_train,X_val,Y_val,0,'simple');
+[A_simple,theta_simple]=OLSQ_est(ordersimple,X_train,Y_train,'simple');
 
-    if plotf
-        cla
-        plot3(X_train(:,1),X_train(:,2),estimatedCm,'.k');
-
-        hold on
-        trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
-
-        refreshdata
-        grid on
-        title(strcat('Simple, E=',num2str(errnew)))
-        legend('Linear regression model','full dataset');
-        pause(0.1)
-    end
-end
-ordersimple=order-2;
-[A,theta]=OLSQ_est(ordersimple,X_train,Y_train,'simple');
-% test=A*theta;
-% test=Y_train-test;
-% test=sum(test.^2);
-
-A_simple=A;
-theta_simple=theta;
 
 %% Linear Regression problem [sumorder]
-order=0; %polynomial order
-errold=inf;
-errnew=1e30;
-errl2=[];
-%Increase order until error increases (due to floating point inaccuracies) 
-if plotf
-figure
-end
-while errnew<errold
-errold=errnew;
-[A,theta]=OLSQ_est(order,X_train,Y_train,'sumorder'); %use training set
-estimatedCm=A*theta;
-resi=Y_train-estimatedCm;
-errnew=sum(resi.^2);
-errl2=[errl2;errnew];
-    if plotf
-        cla
-        plot3(X_train(:,1),X_train(:,2),estimatedCm,'.k');
 
-        hold on
-        trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
-
-        refreshdata
-        grid on;
-        title(strcat('sumorder, E=',num2str(errnew)));
-        legend('Linear regression model','full dataset');
-        pause(0.1)
-    end
-    order=order+1;
-end
-order=order-2;
-ordersum=order;
-err_train=errold;
-[A,theta_train]=OLSQ_est(order,X_train(:,1:2),Y_train,'sumorder');
-estimatedCm_train=A*theta_train;
-res_train=Y_train-estimatedCm;
-E_train=sum(res_train.^2);
+[ordersum,errl2]=find_optimal_order_OLS(X_train,Y_train,X_val,Y_val,0,'sumorder');
+[A_sumorder,theta_sumorder]=OLSQ_est(ordersum,X_train(:,1:2),Y_train,'sumorder');
+estimatedCm_train=A_sumorder*theta_sumorder;
+res_train=Y_train-estimatedCm_train;
+E_train=sum(res_train.^2)/size(res_train,1); %MSE
  if plotf
         cla
         plot3(X_train(:,1),X_train(:,2),estimatedCm_train,'.k');
@@ -117,55 +50,23 @@ E_train=sum(res_train.^2);
         trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
         
         grid on;
-        title(strcat('sumorder, E=',num2str(err_train)));
+        title(strcat('sumorder, MSE=',num2str(E_train)));
         legend('Linear regression model','full dataset'); 
         refreshdata
         
  end
-orderselect=order; %Safe ideal order for validation later on;
-theta_sumorder=theta;
-A_sumorder=A;
+
+
+
  
 %% Linear Regression problem [allorder]
-order=0; %polynomial order
-errold=inf;
-errnew=1e30;
-errl3=[];
-%Increase order until error increases (due to floating point inaccuracies) 
-if plotf
-figure
-end
-while errnew<errold
-errold=errnew;
-[A,theta]=OLSQ_est(order,X_train,Y_train,'allorder'); %use training set
-estimatedCm=A*theta;
-resi=Y_train-estimatedCm;
-errnew=sum(resi.^2);
-errl3=[errl3;errnew];
-    if plotf
-        cla
-        plot3(X_train(:,1),X_train(:,2),estimatedCm,'.k');
+[orderallorder,errl3]=find_optimal_order_OLS(X_train,Y_train,X_val,Y_val,0,'allorder');
 
-        hold on
-        trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
+[A_allorder,theta_allorder]=OLSQ_est(orderallorder,X_train(:,1:2),Y_train,'allorder');
 
-        refreshdata
-        grid on;
-        title(strcat('allorder, E=',num2str(errnew)));
-        legend('Linear regression model','full dataset');
-        pause(0.1)
-    end
-    order=order+1;
-end
-order=order-2;
-orderallorder=order;
-err_train=errold;
-[A,theta_train3]=OLSQ_est(order,X_train(:,1:2),Y_train,'allorder');
-A_allroder=A;
-theta_allorder=theta_train3;
-estimatedCm_train=A*theta_train3;
-res_train=(Y_train-estimatedCm);
-E_train=sum(res_train.^2);
+estimatedCm_train=A_allorder*theta_allorder;
+res_train=(Y_train-estimatedCm_train);
+E_train=sum(res_train.^2)/size(res_train,1);
  if plotf
         cla
         plot3(X_train(:,1),X_train(:,2),estimatedCm_train,'.k');
@@ -174,7 +75,7 @@ E_train=sum(res_train.^2);
         trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
         
         grid();
-        title(strcat('allorder, E=',num2str(err_train)));
+        title(strcat('allorder, MSE=',num2str(E_train)));
         legend('Linear regression model','full dataset'); 
         refreshdata
         
@@ -191,7 +92,7 @@ grid()
 pbaspect([3 1 1])
 xticks([0:1:max([size(errl3,1),size(errl2,1),size(errl1,1)])])
 xlabel('Order') 
-ylabel('Accuracy of fit [-]^2')
+ylabel('MSE [-]')
 legend('$C_m=\sum_{i=0}^{n} \theta_i\left(\alpha+\beta\right)^i $','$C_m=\sum_{i+j=n}^n \theta_{i,j}\alpha^i\beta^j$','$C_m=\sum_{i,j}^n \theta_{i,j}\alpha^i\beta^j$','Interpreter','latex')
 title('Influence of polynomial order on accuracy of fit');
 saveas(gcf,'Report/plots/orderinfl.eps','epsc')
@@ -201,84 +102,93 @@ thetatable.allorder=theta_allorder;
 
 write2table(thetatable,[ordersimple,ordersum,orderallorder],[min(errl1),min(errl2),min(errl3)]); %write files to latex table for report
 
+
 %% Model-error based validation 
 % Resiudal should be zero-mean white noise
 % residuals should have constant variance and be uncorrelated
+type='allorder';
+order=orderallorder;
 
-
-[A_val,~]=OLSQ_est(orderselect,X_val,Y_val,'sumorder');
+[A_train,theta_train]=OLSQ_est(order,X_train,Y_train,type); %use training set
+[A_val,~]=OLSQ_est(order,X_val,Y_val,type); %use training set
 
 estimatedCm_val=A_val*theta_train;
 % estimatedCm_val=calc_poly_output(est,X_val); %calculate output of polynomial with parameters found from training dataset
 res_val=Y_val-estimatedCm_val;
 err_val=sum(res_val.^2);
-[err_autoCorr,lags]=xcorr(res_val-mean(res_val));
-err_autoCorr=err_autoCorr/max(err_autoCorr);
+[err_autoCorr,lags]=xcorr(res_val-mean(res_val,1));
+err_autoCorr = err_autoCorr/max(err_autoCorr);
+conf_95 = 2/sqrt(size(err_autoCorr,1));
+count_95 = size(find(abs(err_autoCorr)<conf_95),1)/size(err_autoCorr,1);
+fileID = fopen(strcat('Report\',type,'_conf95.tex'),'w');
+fprintf(fileID,'%s\n',strcat('$',num2str(round(count_95*100,1)),'\%$'));
+fclose(fileID);
+
+fprintf('%f percent lies within 95% confidence\n',count_95*100);
+
 
 if plotf
-    
+TRIeval = delaunayn([atrue Btrue]);   
+
 figure
 plot3(X_val(:,1),X_val(:,2),estimatedCm_val, '.k');
 hold on
 trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
 legend('Linear regression validation','Full dataset')
 grid on 
+
 figure
 plot(res_val);
 hold on 
 plot([0,length(res_val)],[mean(res_val),mean(res_val)])
 grid on 
+xlim([0, size(res_val,1)])
+title(strcat('Residuals Values, order=',num2str(order)))
+ylabel('\epsilon')
+pbaspect([2.5,1,1])
+legend('Model Residual',strcat('Mean residual =',num2str(mean(res_val))))
+saveas(gcf,strcat('Report/plots/',type,'_resmean.eps'),'epsc');
 figure
 plot(lags,err_autoCorr);
 hold on
-plot(lags([1,end]),[2/sqrt(length(err_autoCorr)),2/sqrt(length(err_autoCorr))],'--k');
+plot(lags([1,end]),[conf_95,conf_95],'--k');
 hold on
-plot(lags([1,end]),[-2/sqrt(length(err_autoCorr)),-2/sqrt(length(err_autoCorr))],'--k');
+plot(lags([1,end]),[-conf_95,-conf_95],'--k');
 grid on 
+pbaspect([3,1,1]);
+ylim([-1.3*max(err_autoCorr(floor(size(err_autoCorr,1)/2)+2:end)),1.3*max(err_autoCorr(size(err_autoCorr,1)/2+1:end))])
+xlabel('lags [#samples]')
+ylabel('Auto-correlation [-]')
+legend('Auto-Correlation','95% confidence interval')
+title(strcat('Residuals Normalized Correlation Values, order=',num2str(order)));
+saveas(gcf,strcat('Report/plots/',type,'_rescorr.eps'),'epsc');
 end
 
+%% Statistical Based Validation
+test=res_val'*res_val;
+evar=(res_val'*res_val)/(size(res_val,1)-size(theta_train,1));
+theta_cov=evar*(A_val'*A_val)^(-1);
+theta_var=diag(theta_cov);
 
+theta_cov2=pinv(A_val) * (res_val * res_val') * A_val * pinv(A_val) / A_val';
+theta_var2=diag(theta_cov2);
+
+
+figure
+subplot(121)
+bar(theta_train)
+grid on
+subplot(122)
+grid on
+% bar(theta_var)
+% hold on
+bar(theta_var2)
+title(strcat('order=',num2str(order)))
+grid on
+saveas(gcf,strcat('Report/plots/',type,'estimator_vars.eps'),'epsc')
 
 %% Functions
-function [A,theta]=OLSQ_est(order,X,Y,type)
-nrvars=size(X,2);
 
-if strcmp(type,'simple')
-A=zeros(size(X,1),order+1);
-A(:,1)=1;
-
-for i=1:order 
-    A(:,i+1)=(sum(X,2)).^i;
-end
-elseif strcmp(type,'allorder')
-
-    ordl=0:order;
-    ordl=(ordl.*ones(size(ordl,2),nrvars)')';
-
-    exps=ordl(1,:);
-    %find all combinations of exponentials 
-    while(sum(ordl(1,:)==order)<nrvars) 
-       a=circshift(ordl,-1);
-       if ordl(1,1)==order
-           nr=sum(ordl(1,1:(end-1))==order);
-           ordl(:,1:nr+1)=a(:,1:nr+1);
-       else
-           ordl(:,1)=a(:,1);
-       end
-       exps=[exps;ordl(1,:)];   
-    end
-    A=x2fx(X,exps);
-
-d=2;
-elseif strcmp(type,'sumorder')
-    exps=zeros(1,nrvars);
-    for k=1:order
-    exps=[exps;exponentials(nrvars,k)];
-    end
-    A=x2fx(X,exps);
-end
-theta=((A'*A)^(-1))*A'*Y;
-end
 
 function Y=calc_poly_output(theta,X)
     n=length(theta)-1; %polynomial order
@@ -287,17 +197,5 @@ function Y=calc_poly_output(theta,X)
         Y=Y+theta(i+1).*sum(X,2).^i; % Y=sum(ti*(x+y)^i
     end
 end
-function exps=exponentials(vars,order)
-if vars<=1
-    exps=order;
-    
-else
-    exps=zeros(0,size(vars,2));
-    
-    for i=order:-1:0
-        rc=exponentials(vars-1,order-i);
-        exps=[exps;i*ones(size(rc,1),1),rc];
-    end
-end
-end
+
 

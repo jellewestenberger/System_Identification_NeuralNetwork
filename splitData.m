@@ -2,7 +2,7 @@ function [X_train,X_val,Y_train,Y_val] = splitData(X,Y,fr_train,fr_val,ran)
 N=size(X,1);
 
 if ran
-   s = RandStream('mt19937ar','Seed',1);
+   s = RandStream('mt19937ar','Seed',1); %fix seed for consistent results in the report
    i=randperm(s,N);
    X=X(i,:);
    Y=Y(i);   
