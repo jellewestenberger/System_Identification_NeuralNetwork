@@ -1,5 +1,6 @@
 clear all
 close all
+global atrue Btrue Cm
 % kalman
 % clearvars -except atrue Btrue Vtrue T
 dataname = 'F16traindata_CMabV_2018';
@@ -82,6 +83,8 @@ E_train=sum(res_train.^2)/size(res_train,1);
  end
 
 %% Plot results of different polynomial types
+typenames={'$C_m=\sum_{i=0}^{n} \theta_i\left(\alpha+\beta\right)^i $','$C_m=\sum_{i+j=n}^n \theta_{i,j}\alpha^i\beta^j$','$C_m=\sum_{i,j}^n \theta_{i,j}\alpha^i\beta^j$'};
+
 figure()
 plot([0:size(errl1,1)-1],errl1);
 hold on
@@ -93,7 +96,7 @@ pbaspect([3 1 1])
 xticks([0:1:max([size(errl3,1),size(errl2,1),size(errl1,1)])])
 xlabel('Order') 
 ylabel('MSE [-]')
-legend('$C_m=\sum_{i=0}^{n} \theta_i\left(\alpha+\beta\right)^i $','$C_m=\sum_{i+j=n}^n \theta_{i,j}\alpha^i\beta^j$','$C_m=\sum_{i,j}^n \theta_{i,j}\alpha^i\beta^j$','Interpreter','latex')
+legend(typenames{1},typenames{2},typenames{3},'Interpreter','latex')
 title('Influence of polynomial order on accuracy of fit');
 saveas(gcf,'Report/plots/orderinfl.eps','epsc')
 thetatable.simple=theta_simple;
@@ -103,99 +106,10 @@ thetatable.allorder=theta_allorder;
 write2table(thetatable,[ordersimple,ordersum,orderallorder],[min(errl1),min(errl2),min(errl3)]); %write files to latex table for report
 
 
-%% Model-error based validation 
-% Resiudal should be zero-mean white noise
-% residuals should have constant variance and be uncorrelated
-type='allorder';
-order=orderallorder;
+%% Validation 
 
-[A_train,theta_train]=OLSQ_est(order,X_train,Y_train,type); %use training set
-[A_val,~]=OLSQ_est(order,X_val,Y_val,type); %use training set
-
-estimatedCm_val=A_val*theta_train;
-% estimatedCm_val=calc_poly_output(est,X_val); %calculate output of polynomial with parameters found from training dataset
-res_val=Y_val-estimatedCm_val;
-err_val=sum(res_val.^2);
-[err_autoCorr,lags]=xcorr(res_val-mean(res_val,1));
-err_autoCorr = err_autoCorr/max(err_autoCorr);
-conf_95 = 2/sqrt(size(err_autoCorr,1));
-count_95 = size(find(abs(err_autoCorr)<conf_95),1)/size(err_autoCorr,1);
-fileID = fopen(strcat('Report\',type,'_conf95.tex'),'w');
-fprintf(fileID,'%s\n',strcat('$',num2str(round(count_95*100,1)),'\%$'));
-fclose(fileID);
-
-fprintf('%f percent lies within 95% confidence\n',count_95*100);
-
-
-if plotf
-TRIeval = delaunayn([atrue Btrue]);   
-
-figure
-plot3(X_val(:,1),X_val(:,2),estimatedCm_val, '.k');
-hold on
-trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
-legend('Linear regression validation','Full dataset')
-grid on 
-
-figure
-plot(res_val);
-hold on 
-plot([0,length(res_val)],[mean(res_val),mean(res_val)])
-grid on 
-xlim([0, size(res_val,1)])
-title(strcat('Residuals Values, order=',num2str(order)))
-ylabel('\epsilon')
-pbaspect([2.5,1,1])
-legend('Model Residual',strcat('Mean residual =',num2str(mean(res_val))))
-saveas(gcf,strcat('Report/plots/',type,'_resmean.eps'),'epsc');
-figure
-plot(lags,err_autoCorr);
-hold on
-plot(lags([1,end]),[conf_95,conf_95],'--k');
-hold on
-plot(lags([1,end]),[-conf_95,-conf_95],'--k');
-grid on 
-pbaspect([3,1,1]);
-ylim([-1.3*max(err_autoCorr(floor(size(err_autoCorr,1)/2)+2:end)),1.3*max(err_autoCorr(size(err_autoCorr,1)/2+1:end))])
-xlabel('lags [#samples]')
-ylabel('Auto-correlation [-]')
-legend('Auto-Correlation','95% confidence interval')
-title(strcat('Residuals Normalized Correlation Values, order=',num2str(order)));
-saveas(gcf,strcat('Report/plots/',type,'_rescorr.eps'),'epsc');
-end
-
-%% Statistical Based Validation
-test=res_val'*res_val;
-evar=(res_val'*res_val)/(size(res_val,1)-size(theta_train,1));
-theta_cov=evar*(A_val'*A_val)^(-1);
-theta_var=diag(theta_cov);
-
-theta_cov2=pinv(A_val) * (res_val * res_val') * A_val * pinv(A_val) / A_val';
-theta_var2=diag(theta_cov2);
-
-
-figure
-subplot(121)
-bar(theta_train)
-grid on
-subplot(122)
-grid on
-% bar(theta_var)
-% hold on
-bar(theta_var2)
-title(strcat('order=',num2str(order)))
-grid on
-saveas(gcf,strcat('Report/plots/',type,'estimator_vars.eps'),'epsc')
-
-%% Functions
-
-
-function Y=calc_poly_output(theta,X)
-    n=length(theta)-1; %polynomial order
-    Y=theta(1)*ones(size(X,1),1); %first element (x+y)^0 
-    for i = 1:n
-        Y=Y+theta(i+1).*sum(X,2).^i; % Y=sum(ti*(x+y)^i
-    end
-end
+do_validation('simple',orderallorder,X_train,Y_train,X_val,Y_val,1,typenames);
+do_validation('sumorder',orderallorder,X_train,Y_train,X_val,Y_val,1,typenames);
+do_validation('allorder',orderallorder,X_train,Y_train,X_val,Y_val,1,typenames);
 
 
