@@ -21,21 +21,20 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
      dvjcij{k}=zeros(nrNodes(k),nrMeasurements);
     Nin=nrInputs(k);
     
-    if strcmp(NNset.trainFunct{k,1},'radbas')
+    if strcmp(NNset.trainFunct{k,1},'radbas') %if radial basis activation function 
         for i=1:Nin
             xij=yi{k}(i,:).*ones(nrNodes(k),nrMeasurements);
             cij=NNset.centers{k}(:,i).*ones(nrNodes(k),nrMeasurements);
             wj=NNset.IW{k}(:,i);
-%             vi{i,k}=(wj.*(xij-cij)).^2;
-            vj{k}=vj{k}+(wj.*(xij-cij)).^2;
-            dvjdwij{k,i}=2*(wj.*(xij-cij).^2);
+            vj{k}=vj{k}+(wj.*(xij-cij)).^2; %vj is summed for every input variable
+            dvjdwij{k,i}=2*(wj.*(xij-cij).^2); 
             dvjcij{k,i}=-2*((wj.^2).*(xij-cij));
             
         end
         dphidvj{k}=-NNset.a{k}.*exp(-vj{k});
         yj{k}=NNset.a{k}.*exp(-vj{k});%output for hidden layer
     end
-    if strcmp(NNset.trainFunct{k,1},'tansig')
+    if strcmp(NNset.trainFunct{k,1},'tansig')  %if tangent sigmoidal acitvation function
         vj{k}=(NNset.IW{k}*yi{k});
         if strcmp(NNset.name{1},'feedforward')
         vj{k}=vj{k}+NNset.b{k,1}*ones(1,nrMeasurements); %add bias if feedforward
@@ -44,7 +43,7 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
        for i=1:Nin
            dvjdwij{k,i}=ones(size(NNset.IW{k},1),1)*(yi{k}(i,:));
        end
-%        dvjdwij{k}=yi{k};
+
        dphidvj{k}=(4*exp(-2*vj{k}))./((1+exp(-2*vj{k})).^2);
     end
         
@@ -54,7 +53,7 @@ end
 
 %output of output layer;
 vk=NNset.LW'.*yi{end};
-% if strcmp(NNset.
+
 if strcmp(NNset.name{1},'feedforward')
      yk=sum(vk,1)+NNset.b{end}*ones(1,nrMeasurements);    
 elseif strcmp(NNset.name{1},'rbf')
@@ -70,7 +69,5 @@ outputs.vk=vj;
 outputs.dvjdwij=dvjdwij;
 outputs.dvjcij=dvjcij;
 outputs.dphidvj=dphidvj;
-% hold on
-% plot3(atrue,Btrue,Y2'-Cm,'.b');
 eval=eval+1;
 end
