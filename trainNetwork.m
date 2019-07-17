@@ -209,7 +209,8 @@ d=((J'*J)+mu)^(-1)*J'*E;
 d=d';
 end
 
-
+% Partial derivatives: Note that some partial derivatives have already been
+% calculated in calcNNOuput and are stored in outputs
 function dEdWjk=outputWeight(outputs,ekq)
 %         ekq=Cm'-outputs.yk;
 %         E(1)=sum(0.5*ekq.^2);
