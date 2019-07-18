@@ -2,6 +2,7 @@ function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Netwo
 nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
+NNset.init=inittype;
 
 if strcmp(Networktype, 'ff')
     for h=1:(nrHiddenlayers)

@@ -5,6 +5,8 @@ load('atrue.mat');
 load('Btrue.mat');
 load('Vtrue.mat');
 load('T.mat');
+
+
 % load('F16traindata_CMabV_2018','Cm');
 load_f16data2018;
 % ind=[1:10:size(Cm,1)];
@@ -16,7 +18,7 @@ load_f16data2018;
 % X=[alpha_m';beta_m'];
 % Cm=normalize(Cm)
 atrue_nom=normalize(atrue,'zscore');
-btrue_nom=normalize(Btrue,'zscore');    
+btrue_nom=normalize(Btrue,'zscore');   
 X=[atrue_nom'; btrue_nom'];%]; %input vector 
 % Cm=normalize(Cm,'zscore');
 % X=[atrue'; Btrue'];%]; %input vector 
@@ -37,9 +39,10 @@ X=X';
 
 %%---CHECK---- %% 
 %  check=NNCheck(NNset,nrInput,nrNodesHidden,nrOutput);
-
+figure('Position',[100,10,1000,700])
 %% Linear regression 
-NNset_lin=createNNStructure(nrInput,[30],nrOutput,inputrange,Networktype,1000,'random',Cm);
+
+NNset_lin=createNNStructure(nrInput,[105],nrOutput,inputrange,Networktype,1000,'random',Cm);
 % NNset_lin.IW{1}=NNset_lin.IW{1}*1e-1;
 swit=1;
 if swit
@@ -57,17 +60,39 @@ Cm_est=A*a_est;
 NNset_lin.a{k}=a_est; 
 end
 result=calcNNOutput(NNset_lin,X);
-E=sum(result.yk'-Cm);
-TRIeval = delaunayn(X(1:2,:)');
+E=(1/size(Cm,1))*sum((result.yk'-Cm).^2);
+TRIeval = delaunayn(X(1:2,:)',{'Qt','Qbb','Qc'});
 
-figure(1)
+
 clf
+subplot(121)
 trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
 hold on
 plot3(X(1,:),X(2,:),Cm_est,'.')
-title(strcat("Error:",num2str(E)));
-refreshdata
-drawnow
+xlabel('\alpha normalized')
+ylabel('\beta normalized')
+zlabel('C_m [-]')
+legend('C_m data','NN-output','location','best','interpreter','latex')
+pbaspect([1,1,1])
+view(135,20)
+title(strcat(num2str(size(NNset_lin.LW,2))," Neurons, MSE: ",num2str(E)),'interpreter','latex');
+set(gcf,'Renderer','OpenGL');
+hold on;
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong;
+drawnow();
+
+subplot(122)
+trisurf(TRIeval,X(1,:)',X(2,:)',Cm-result.yk','edgecolor','none')
+title('Residual','interpreter','latex')
+pbaspect([1,1,1])
+view(135,20)
+
+saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.eps'),'epsc')
+saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.jpg'))
 
 %% Levenberg Marquard
 NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random',Cm);
