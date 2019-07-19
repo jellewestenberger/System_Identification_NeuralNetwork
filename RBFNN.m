@@ -95,14 +95,14 @@ saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_li
 saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.jpg'))
 
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random',Cm);
+NNset=createNNStructure(nrInput,200,nrOutput,inputrange,Networktype,10000,'random',Cm);
 NNset.trainalg='trainlm';
 NNset.trainParam.mu=1e-2;
 NNset.trainParam.mu_inc=5;
 NNset.trainParam.mu_dec=0.1;
 % Cm_norm=normalize(Cm,'zscore');
 
-[NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wo','a','c','wi'});
+[NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wi','a','c','wo'});
  result=calcNNOutput(NNset,X);
 
 %% golden ratio search:

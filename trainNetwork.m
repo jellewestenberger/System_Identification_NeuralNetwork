@@ -6,7 +6,7 @@ function [NNsetmin, minerror]=trainNetwork(NNset,Cm,X,plotf,selector)
 global eval 
 eval=0;
 plotf=1;
-optimizeorder=0;
+optimizeorder=1;
 eta=0.0000001;
 disp('Number of Neurons:');
 disp(length(NNset.LW));
@@ -132,13 +132,13 @@ while eval<evaltot
             El2=[El2;Ek1];
             if (Ek1>Ek)
                 if m<5
-               m=m+1; 
-               NNset=NNset_old;
-               if strcmp(trainalg,'trainlm')
-               mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
-               elseif strcmp(trainalg,'traingd')
-                   mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
-               end
+                   m=m+1; 
+                   NNset=NNset_old;
+                   if strcmp(trainalg,'trainlm')
+                        mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
+                   elseif strcmp(trainalg,'traingd')
+                        mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
+                   end
                 else 
                     accept=1;                    
                 end
@@ -156,7 +156,7 @@ while eval<evaltot
                 NNset_old=NNset;
                 output=output1;
                 ekq=ekq1;
-                if (Ek1-Ek)<0 && (Ek1-Ek)<1e-2*min(dE) 
+                if (Ek1-Ek)<0 && (Ek1-Ek)<1e-2*min(dE)  %this prevents parameters never be chosen again if they increased the error for a run
                 dE(1)=(Ek1-Ek);
                 else
                  dE(1)=1e-1*min(dE);
