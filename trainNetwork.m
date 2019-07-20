@@ -336,20 +336,27 @@ end
             if size(X,1)==2
     %             set(gcf, 'WindowState','fullscreen')            
                 subplot(221)                        
-                trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none')
+                trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
+%                 sp.XDataSource="X(1,:)'";
+%                 sp.YDataSource="X(2,:)'";
+%                 sp.ZDataSource="Cm";
 %                 hold on
 %                 plot3(X(1,:)',X(2,:)',Cm,'.b');
                 hold on
                 if accept
-                    plot3(X(1,:),X(2,:),output.yk,'g')
+                    plot3(X(1,:),X(2,:),output.yk,'.g');
                 else
-                    plot3(X(1,:),X(2,:),output.yk)
+                    plot3(X(1,:),X(2,:),output.yk,'.');
                 end
+
+                
                 xlabel('alpha')
                 ylabel('beta')
                 title(strcat('evaluation:',{' '},num2str(eval),{' '},'optimizing ',{' '},selector{1},'(',num2str(j),')'))
-                grid()      
+                grid on      
                 view([1,1,1]);
+                
+                
                 
                 subplot(223)    
                 QE=0.5*(output.yk-Cm').^2;
@@ -359,8 +366,9 @@ end
                 xlabel('alpha')
                 ylabel('beta')
                 title('quadratic error')
-                grid()      
+                grid on      
                 view([1,1,1]);
+                
                 if eval<=50 || not(scroll)
                 subplot(224)            
                 semilogy(evl,El,'Linewidth',2)          
@@ -371,7 +379,7 @@ end
                  title(strcat('error: ', num2str(El(end))))
                  xlabel('Evaluation')
                  ylabel('error value');
-                 grid();
+                 grid on;
                  hold on
                 else
                     subplot(224)
@@ -386,15 +394,18 @@ end
                     title(strcat('error: ', num2str(El(end))))
                     xlabel('Evaluation')
                     ylabel('error value');
-                    grid();
+                    grid on;
                 end
+                
+                
                 subplot(222)
                 semilogy(evl,El,'Linewidth',2)
                 title(strcat('error: ', num2str(El(end))))
                 xlabel('Evaluation')
                 ylabel('error value');
-                grid()
+                grid on
                
+                
 %                  subplot(224)
 %                  if accept
 %                     plot(Curpar,'.g')
@@ -405,15 +416,18 @@ end
 %                 title(selector{1})
 %                 xlabel('Neuron')
 %                 ylabel('Gain')
-%                 grid();
+%                 grid on;
             else
 
             plot(output.yk)
             title(strcat('evaluation ',num2str(cycle)));
             hold on
             plot(Cm)
+            
             end
     %         legend('Approximation','True');
+            
+          
             refreshdata
             drawnow
     %         pause
