@@ -95,23 +95,33 @@ saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_li
 saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.jpg'))
 
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,50,nrOutput,inputrange,Networktype,10000,'random',Cm);
+NNset=createNNStructure(nrInput,105,nrOutput,inputrange,Networktype,1000,'random',Cm);
 NNset.trainalg='trainlm';
-NNset.trainParam.mu=1e-2;
-NNset.trainParam.mu_inc=5;
+NNset.trainParam.mu=100;
+NNset.trainParam.mu_inc=10;
 NNset.trainParam.mu_dec=0.1;
 % Cm_norm=normalize(Cm,'zscore');
 
-[NNset, ~]=trainNetwork(NNset,Cm,X,1,{'wi','a','c','wo'});
- result=calcNNOutput(NNset,X);
- 
- TRIeval = delaunayn(X');
- figure()
- sur
+% [~, ~,E1,evl1]=trainNetwork(NNset,Cm,X,1,{'wi','a','c','wo'},0);
+[~, ~,E2,evl2]=trainNetwork(NNset,Cm,X,1,{'wo','c','a','wi'},0);
+% [~, ~,E3,evl3]=trainNetwork(NNset,Cm,X,1,{'wo','c','a','wi'},1);
+%%
+% figure 
+% semilogy(evl1,E1)
+% hold on 
+% semilogy(evl2,E2)
+% hold on
+% semilogy(evl3,E3)
+% hold off 
+% grid on 
+% title('Training order comparison')
+% legend('wi-a-c-wo','wo-c-a-wi','optimize order','interpreter','latex')
+% xlabel('evaluation','interpreter','latex')
+% ylabel('error [0.5(.)^2]','interpreter','latex')
+% saveas(gcf,'Report/plots/ordercomp.eps','epsc')
  
 
-%% golden ratio search:
-GR=(1+sqrt(5))/2.; 
+%% golden ratio search:GR=(1+sqrt(5))/2.; 
 a=100;
 b=700;
 c=b-((b-a)/GR);

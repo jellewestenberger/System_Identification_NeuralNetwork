@@ -3,6 +3,8 @@ nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
 NNset.init=inittype;
+% s=RandStream('mt19937ar','Seed',1);
+rng(10) %fix random seed for consistent results in report 
 
 if strcmp(Networktype, 'ff')
     for h=1:(nrHiddenlayers)
@@ -36,6 +38,7 @@ elseif strcmp(Networktype,'rbf')
              NNset.a{h}=ones(nrNodesHidden(h),1);
         end
         if strcmp(inittype,'random')
+            
             NNset.a{h}=randn(nrNodesHidden(h),1)*1e-2;
         end
     end 

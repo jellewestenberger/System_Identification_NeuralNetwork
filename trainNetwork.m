@@ -1,4 +1,4 @@
-function [NNsetmin, minerror]=trainNetwork(NNset,Cm,X,plotf,selector)
+function [NNsetmin, minerror,El,evl]=trainNetwork(NNset,Cm,X,plotf,selector,optimizeorder)
 % close all
 % atrue=X(1,:);
 % Btrue=X(2,:);
@@ -6,7 +6,7 @@ function [NNsetmin, minerror]=trainNetwork(NNset,Cm,X,plotf,selector)
 global eval 
 eval=0;
 plotf=1;
-optimizeorder=1;
+
 eta=0.0000001;
 disp('Number of Neurons:');
 disp(length(NNset.LW));
@@ -134,7 +134,7 @@ while eval<evaltot
                 if m<5
                    m=m+1; 
                    NNset=NNset_old;
-                   if strcmp(trainalg,'trainlm')
+                   if strcmp(trainalg,'trainlm') && mu{1}{j}<mu_max
                         mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
                    elseif strcmp(trainalg,'traingd')
                         mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
@@ -146,7 +146,7 @@ while eval<evaltot
                 accept=1;
                  if strcmp(trainalg,'trainlm')  
                  mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
-                 elseif strcmp(trainalg,'traingd')
+                 elseif strcmp(trainalg,'traingd') && mu{1}{j}<mu_max
                      mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
                  end
             end
@@ -352,7 +352,7 @@ end
                 
                 xlabel('alpha')
                 ylabel('beta')
-                title(strcat('evaluation:',{' '},num2str(eval),{' '},'optimizing ',{' '},selector{1},'(',num2str(j),')'))
+                title(strcat('evaluation:',{' '},num2str(eval),{' '},'optimizing ',{' '},selector{1},'(',num2str(j),'), MU: ',num2str(mu{1}{j})))
                 grid on      
                 view([1,1,1]);
                 
