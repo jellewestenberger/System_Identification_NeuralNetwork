@@ -1,4 +1,4 @@
-function [NNsetmin, minerror,El,evl]=trainNetwork(NNset,Cm,X,plotf,selector,optimizeorder)
+function [NNsetmin, minerror,El,evl]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,plotf,selector,optimizeorder)
 % close all
 % atrue=X(1,:);
 % Btrue=X(2,:);
@@ -10,8 +10,9 @@ plotf=1;
 eta=0.0000001;
 disp('Number of Neurons:');
 disp(length(NNset.LW));
-if size(X,1)==2
-TRIeval = delaunayn(X');
+if size(X_train,1)==2
+TRIeval = delaunayn(X_train');
+TRIeval_val= delaunay(X_val');
 end
 eval_par=length(selector); %number of parameters being evaluated 
 minerror=inf;
@@ -36,8 +37,8 @@ mu_inc=NNset.trainParam.mu_inc;
 mu_dec=NNset.trainParam.mu_dec;
 mu_max=NNset.trainParam.mu_max;
 trainalg=NNset.trainalg;
-output=calcNNOutput(NNset,X); 
-ekq=Cm'-output.yk;
+output=calcNNOutput(NNset,X_train); 
+ekq=Y_train'-output.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
 El=[sum(0.5*ekq.^2)];
 El2=[];
@@ -53,7 +54,7 @@ while eval<evaltot
       
         NNset_old=NNset;
 %         output=calcNNOutput(NNset,X);
-        ekq=Cm'-output.yk;
+        ekq=Y_train'-output.yk;
         Ek=sum(0.5*ekq.^2);
         for p=1:length(selector)
             
@@ -126,11 +127,12 @@ while eval<evaltot
                 NNset.b{2}=NNset.b{2}-d;  
                 Curpar= NNset.b{2};
             end
-            output1=calcNNOutput(NNset,X);
-            ekq1=Cm'-output1.yk;
-            Ek1=sum(0.5*ekq1.^2); 
+            output_val=calcNNOutput(NNset,X_val);
+            eval=eval+1;
+            ekq_val=Y_val'-output_val.yk;
+            Ek1=sum(0.5*ekq_val.^2); 
             El2=[El2;Ek1];
-            if (Ek1>Ek)
+            if (Ek1>Ek_val)
                 if m<5
                    m=m+1; 
                    NNset=NNset_old;
@@ -151,11 +153,11 @@ while eval<evaltot
                  end
             end
             
-            plotfig(output,1)
+            plotfig(output_val,1)
             if accept
                 NNset_old=NNset;
-                output=output1;
-                ekq=ekq1;
+                output=calcNNOutput(NNset,X_train); 
+                ekq=Y_train'-output.yk; 
                 if (Ek1-Ek)<0 && (Ek1-Ek)<1e-2*min(dE)  %this prevents parameters never be chosen again if they increased the error for a run
                 dE(1)=(Ek1-Ek);
                 else
@@ -333,10 +335,10 @@ end
                 figure(2)
             end
             clf(2)
-            if size(X,1)==2
+            if size(X_train,1)==2
     %             set(gcf, 'WindowState','fullscreen')            
                 subplot(221)                        
-                trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
+                trisurf(TRIeval,X_train(1,:)',X_train(2,:)',Y_train,'edgecolor','none');
 %                 sp.XDataSource="X(1,:)'";
 %                 sp.YDataSource="X(2,:)'";
 %                 sp.ZDataSource="Cm";
@@ -344,9 +346,9 @@ end
 %                 plot3(X(1,:)',X(2,:)',Cm,'.b');
                 hold on
                 if accept
-                    plot3(X(1,:),X(2,:),output.yk,'.g');
+                    plot3(X_val(1,:),X_val(2,:),output_val.yk,'.g');
                 else
-                    plot3(X(1,:),X(2,:),output.yk,'.');
+                    plot3(X_val(1,:),X_val(2,:),output_val.yk,'.');
                 end
 
                 
@@ -359,8 +361,8 @@ end
                 
                 
                 subplot(223)    
-                QE=0.5*(output.yk-Cm').^2;
-                trisurf(TRIeval,X(1,:)',X(2,:)',QE,'edgecolor','none')
+                QE=0.5*(output_val.yk-Y_val').^2;
+                trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',QE,'edgecolor','none')
 %                 plot3(X(1,:),X(2,:),QE,'.')
                 
                 xlabel('alpha')
@@ -422,7 +424,7 @@ end
             plot(output.yk)
             title(strcat('evaluation ',num2str(cycle)));
             hold on
-            plot(Cm)
+            plot(Y_val)
             
             end
     %         legend('Approximation','True');

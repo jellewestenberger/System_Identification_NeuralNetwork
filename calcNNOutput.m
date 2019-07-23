@@ -69,5 +69,5 @@ outputs.vk=vj;
 outputs.dvjdwij=dvjdwij;
 outputs.dvjcij=dvjcij;
 outputs.dphidvj=dphidvj;
-eval=eval+1;
+% eval=eval+1;
 end
