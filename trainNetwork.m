@@ -38,9 +38,12 @@ mu_dec=NNset.trainParam.mu_dec;
 mu_max=NNset.trainParam.mu_max;
 trainalg=NNset.trainalg;
 output=calcNNOutput(NNset,X_train); 
+output_val=calcNNOutput(NNset,X_val); 
 ekq=Y_train'-output.yk;
+ekq_val=Y_val'-output_val.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
-El=[sum(0.5*ekq.^2)];
+El=[sum(0.5*ekq_val.^2)];
+Ek_val_old=0;
 El2=[];
 cyclel=[];
 evl=[eval];
@@ -55,6 +58,7 @@ while eval<evaltot
         NNset_old=NNset;
 %         output=calcNNOutput(NNset,X);
         ekq=Y_train'-output.yk;
+        
         Ek=sum(0.5*ekq.^2);
         for p=1:length(selector)
             
@@ -130,9 +134,9 @@ while eval<evaltot
             output_val=calcNNOutput(NNset,X_val);
             eval=eval+1;
             ekq_val=Y_val'-output_val.yk;
-            Ek1=sum(0.5*ekq_val.^2); 
-            El2=[El2;Ek1];
-            if (Ek1>Ek_val)
+            Ek_val=sum(0.5*ekq_val.^2); 
+            El2=[El2;Ek_val];
+            if (Ek_val>Ek_val_old)
                 if m<5
                    m=m+1; 
                    NNset=NNset_old;
@@ -158,16 +162,21 @@ while eval<evaltot
                 NNset_old=NNset;
                 output=calcNNOutput(NNset,X_train); 
                 ekq=Y_train'-output.yk; 
-                if (Ek1-Ek)<0 && (Ek1-Ek)<1e-2*min(dE)  %this prevents parameters never be chosen again if they increased the error for a run
-                dE(1)=(Ek1-Ek);
+                MSE_train=sum(ekq.^2)/size(ekq,2);
+                MSE_val=sum(ekq_val.^2)/size(ekq_val,2);
+                if (Ek_val-Ek_val_old)<0 && (Ek_val-Ek_val_old)<1e-2*min(dE)  %this prevents parameters never be chosen again if they increased the error for a run
+                dE(1)=(Ek_val-Ek_val_old);
+                dummy=3;
                 else
                  dE(1)=1e-1*min(dE);
                 end
-                Ek=Ek1;
+                fprintf("MSE train: %f, MSE val: %f\n",MSE_train,MSE_val);
                 
-                E{1}{j}=Ek;   
-                evl=[evl;eval-1];     
-                El=[El,Ek];
+                E{1}{j}=Ek_val;   
+                evl=[evl;eval];     
+                El=[El,Ek_val];
+                Ek_val_old=Ek_val;
+                
             end
             
             end
@@ -196,7 +205,7 @@ while eval<evaltot
         minerror=El(end);
         NNsetmin=NNset;       
     end
-fprintf('min error: %f, gradient: %f \n',minerror,min(dE))
+fprintf('\n min error: %f, gradient: %f \n',minerror,min(dE))
 % disp(minerror)    
 end
 
@@ -387,13 +396,13 @@ end
                     subplot(224)
                     semilogy(evl(evl>(evl(end)-50)),El(evl>(evl(end)-50)),'Linewidth',2)
                     hold on 
-                    semilogy(eval-50:eval-1,El2(end-49:end));
+                    semilogy(eval-50:eval,El2(end-50:end));
                     hold on 
-                    semilogy(eval-50:eval-1,El2(end-49:end), '.k');
+                    semilogy(eval-50:eval,El2(end-50:end), '.k');
                     xlim([eval-50,eval]);
                     ylim([min(El(evl>(evl(end)-50))),max(El(evl>(evl(end)-50)))]);
                    
-                    title(strcat('error: ', num2str(El(end))))
+                    title(strcat('error: ', num2str(El2(end))))
                     xlabel('Evaluation')
                     ylabel('error value');
                     grid on;

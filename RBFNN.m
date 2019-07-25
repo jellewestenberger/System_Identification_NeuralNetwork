@@ -19,6 +19,7 @@ load_f16data2018;
 % Cm=normalize(Cm)
 atrue_nom=normalize(atrue,'zscore');
 btrue_nom=normalize(Btrue,'zscore');   
+X=[atrue_nom,btrue_nom]';
 fr_train=0.7;
 fr_val=1-fr_train;
 [X_train,X_val,Y_train,Y_val]=splitData([atrue_nom,btrue_nom],Cm,fr_train,fr_val,1);
@@ -46,7 +47,7 @@ X_val=X_val';
 figure('Position',[100,10,1000,700])
 %% Linear regression 
 
-NNset_lin=createNNStructure(nrInput,[105],nrOutput,inputrange,Networktype,1000,'random',Cm);
+NNset_lin=createNNStructure(nrInput,[105],nrOutput,inputrange,Networktype,1000,'random');
 % NNset_lin.IW{1}=NNset_lin.IW{1}*1e-1;
 swit=1;
 if swit
@@ -63,20 +64,20 @@ a_est=(A'*A)^(-1)*A'*Y_train; %least-squared estimators
 Y_train_est=A*a_est;
 NNset_lin.a{k}=a_est; 
 end
-result=calcNNOutput(NNset_lin,X_train);
-E=(1/size(Y_train,1))*sum((result.yk'-Y_train).^2);
-TRIeval = delaunayn(X_train(1:2,:)',{'Qt','Qbb','Qc'});
-
+result=calcNNOutput(NNset_lin,X_val);
+E=(1/size(Y_val,1))*sum((result.yk'-Y_val).^2);
+TRIeval = delaunayn(X(1:2,:)',{'Qt','Qbb','Qc'});
+TRIeval_val=delaunayn(X_val(1:2,:)',{'Qt','Qbb','Qc'});
 
 clf
 subplot(121)
-trisurf(TRIeval,X_train(1,:)',X_train(2,:)',Y_train,'edgecolor','none');
+trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
 hold on
-plot3(X_train(1,:),X_train(2,:),Y_train_est,'.')
+plot3(X_val(1,:),X_val(2,:),result.yk,'.')
 xlabel('\alpha normalized')
 ylabel('\beta normalized')
 zlabel('C_m [-]')
-legend('C_m data','NN-output','location','best','interpreter','latex')
+legend('C_m data','NN validation output','location','best','interpreter','latex')
 pbaspect([1,1,1])
 view(135,20)
 title(strcat(num2str(size(NNset_lin.LW,2))," Neurons, MSE: ",num2str(E)),'interpreter','latex');
@@ -90,7 +91,7 @@ lighting phong;
 drawnow();
 
 subplot(122)
-trisurf(TRIeval,X_train(1,:)',X_train(2,:)',Y_train-result.yk','edgecolor','none')
+trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',Y_val-result.yk','edgecolor','none')
 title('Residual','interpreter','latex')
 pbaspect([1,1,1])
 view(135,20)
@@ -99,15 +100,15 @@ saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_li
 saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.jpg'))
 
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,105,nrOutput,inputrange,Networktype,1000,'random',Y_train);
+NNset=createNNStructure(nrInput,300,nrOutput,inputrange,Networktype,1000,'random');
 NNset.trainalg='trainlm';
 NNset.trainParam.mu=100;
 NNset.trainParam.mu_inc=10;
-NNset.trainParam.mu_dec=0.1;
+NNset.trainParam.mu_dec=0.05;
 % Y_train_norm=normalize(Y_train,'zscore');
 
 % [~, ~,E1,evl1]=trainNetwork(NNset,Y_train,X,1,{'wi','a','c','wo'},0);
-[~, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+% [~, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
 % [~, ~,E3,evl3]=trainNetwork(NNset,Y_train,X,1,{'wo','c','a','wi'},1);
 %%
 % figure 
@@ -123,33 +124,74 @@ NNset.trainParam.mu_dec=0.1;
 % xlabel('evaluation','interpreter','latex')
 % ylabel('error [0.5(.)^2]','interpreter','latex')
 % saveas(gcf,'Report/plots/ordercomp.eps','epsc')
+
+%%
+El=[];
+El_mean=[];
+nrit=5;
+for n=5:10:500
+    Emean=0;
+    for k=1:nrit
+        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,200,'random'); 
+        [~,E_i]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+        Emean=Emean+(1/nrit)*E_i;
+        El=[El;n,E_i];
+    end
+    El_mean=[El_mean;n,Emean];
+end
+        
+        
+
+
  
 
-%% golden ratio search:GR=(1+sqrt(5))/2.; 
-a=100;
-b=700;
+%% golden ratio search:
+GR=(1+sqrt(5))/2.; 
+a=10;
+b=1000;
 c=b-((b-a)/GR);
 d=a+((b-a)/GR);
 c=floor(c); %we need integers for number of neurons
 d=floor(d);
-El=[0,0];
-
+El_accept=[0,0];
+El=[];
+E_d_kl=[];
 while abs(c-d)>=1
-    if size(find(El(:,1)==c),1)==1    
-        i=find(El(:,1)==c);
-        E_c=El(i,2);
+    if size(find(El_accept(:,1)==c),1)==1    
+        i=find(El_accept(:,1)==c);
+        E_c=El_accept(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random',Y_train);  
-        [~,E_c]=trainNetwork(NN_c,Y_train,X_train,1,{'wo','wi','a','c'});
-        El=[El; c,E_c];
+        E_c_kl=[];
+        for k=1:5
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random');  
+        [~,E_c_k]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+        E_c_kl=[E_c_kl,E_c_k];
+     
+        El=[El;floor(c),E_c_k];
+
+        end
+        E_c=mean(E_c_kl);
+        El_accept=[El_accept; c,E_c];
     end   
-    if size(find(El(:,1)==d),1)==1    
-        i=find(El(:,1)==d);
-        E_d=El(i,2);
+    
+       
+    if size(find(El_accept(:,1)==d),1)==1    
+        i=find(El_accept(:,1)==d);
+        E_d=El_accept(i,2);
     else
-        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,200,'random',Y_train);  
-        [~,E_d]=trainNetwork(NN_d,Y_train,X_train,1,{'wo','wi','a','c'});
-        El=[El; d,E_d];
+        E_d_kl=[];
+        for k =1:5
+        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,200,'random');  
+        [~,E_d_k]=trainNetwork(NN_d,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+        E_d_kl=[E_d_kl,E_d_k];
+        
+        El=[El;floor(d),E_d_k];
+
+%         refreshdata
+%         drawnow
+        end
+        E_d=mean(E_d_kl);
+        El_accept=[El_accept; d,E_d];
     end   
 
 % NN_d=createNNStructure(nrInput,[d],nrOutput,inputrange,Networktype,'ones');   
@@ -164,13 +206,22 @@ while abs(c-d)>=1
     d=round(a+((b-a)/GR),0);
 
 end
-if size(find(El(:,1)==c),1)==1    
-        i=find(El(:,1)==c);
-        E_c=El(i,2);
+%%
+figure
+plot(El(:,1),El(:,2),'.')
+xlabel('neurons')
+ylabel('error end')
+saveas(gcf,'Report/plots/nnopti.eps','epsc')
+saveas(gcf,'Report/plots/nnopti.jpg')
+
+%%
+if size(find(El_accept(:,1)==c),1)==1    
+        i=find(El_accept(:,1)==c);
+        E_c=El_accept(i,2);
     else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random',Y_train);  
-        [~,E_c]=trainNetwork(NN_c,Y_train,X_train,1,[1,1,1,1]);
-        El=[El; c,E_c];
+        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random');  
+        [~,E_c]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+        El_accept=[El_accept; c,E_c];
         
 end
 %%

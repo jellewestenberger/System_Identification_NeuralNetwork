@@ -1,10 +1,10 @@
-function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,epoch,inittype,y)
+function NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,epoch,inittype)
 nrHiddenlayers=size(nrNodesHidden,2);
 inputs=[nrInput, nrNodesHidden];
 NNset.range=inputrange;
 NNset.init=inittype;
 % s=RandStream('mt19937ar','Seed',1);
-rng(10) %fix random seed for consistent results in report 
+% rng(10) %fix random seed for consistent results in report 
 
 if strcmp(Networktype, 'ff')
     for h=1:(nrHiddenlayers)
@@ -65,7 +65,7 @@ end
 NNset.trainParam.epochs=epoch;
 NNset.trainParam.goal=0;
 NNset.trainParam.min_grad=1e-10;
-NNset.trainParam.mu=1e-5; %learning rate 
+NNset.trainParam.mu=100; %learning rate 
 NNset.trainParam.mu_dec=1e-1; 
 NNset.trainParam.mu_inc=10;
 NNset.trainParam.mu_max=1e10; 
