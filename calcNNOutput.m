@@ -44,7 +44,8 @@ for k=1:nrHiddenlayers %loop over number of hidden layers
            dvjdwij{k,i}=ones(size(NNset.IW{k},1),1)*(yi{k}(i,:));
        end
 
-       dphidvj{k}=(4*exp(-2*vj{k}))./((1+exp(-2*vj{k})).^2);
+       dphidvj{k}=((1+exp(-2*vj{k})).^2)./((1+exp(-2*vj{k})).^2);
+       dumyy=2;
     end
         
     yi{k+1}=yj{k}; %output hiddenlayer is input next hidden layer

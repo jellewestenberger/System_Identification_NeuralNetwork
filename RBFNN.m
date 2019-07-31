@@ -129,10 +129,10 @@ NNset.trainParam.mu_dec=0.05;
 El=[];
 El_mean=[];
 nrit=5;
-for n=5:10:500
+for n=565:20:1000
     Emean=0;
     for k=1:nrit
-        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,200,'random'); 
+        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,inf,'random'); 
         [~,E_i]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
         Emean=Emean+(1/nrit)*E_i;
         El=[El;n,E_i];
@@ -140,7 +140,7 @@ for n=5:10:500
     El_mean=[El_mean;n,Emean];
 end
         
-        
+save('nnglobalsession565andup.mat','El','El_mean')     
 
 
  
@@ -207,12 +207,7 @@ while abs(c-d)>=1
 
 end
 %%
-figure
-plot(El(:,1),El(:,2),'.')
-xlabel('neurons')
-ylabel('error end')
-saveas(gcf,'Report/plots/nnopti.eps','epsc')
-saveas(gcf,'Report/plots/nnopti.jpg')
+
 
 %%
 if size(find(El_accept(:,1)==c),1)==1    

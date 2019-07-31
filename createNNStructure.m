@@ -64,7 +64,7 @@ end
 
 NNset.trainParam.epochs=epoch;
 NNset.trainParam.goal=0;
-NNset.trainParam.min_grad=1e-10;
+NNset.trainParam.min_grad=1e-7;
 NNset.trainParam.mu=100; %learning rate 
 NNset.trainParam.mu_dec=1e-1; 
 NNset.trainParam.mu_inc=10;

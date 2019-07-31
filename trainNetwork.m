@@ -18,6 +18,7 @@ eval_par=length(selector); %number of parameters being evaluated
 minerror=inf;
 E={};
 mu={};
+stopcount=0;
 for i=1:size(selector,2) 
     if strcmp(selector(i),'wi')||strcmp(selector{i},'c')
         mu{i}=mat2cell(ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu,[1,1]);
@@ -46,6 +47,7 @@ El=[sum(0.5*ekq_val.^2)];
 Ek_val_old=0;
 El2=[];
 cyclel=[];
+dEl=[]; 
 evl=[eval];
 cycle=1;
 evaltot=NNset.trainParam.epochs;
@@ -170,7 +172,7 @@ while eval<evaltot
                 else
                  dE(1)=1e-1*min(dE);
                 end
-                fprintf("MSE train: %f, MSE val: %f\n",MSE_train,MSE_val);
+%                 fprintf("MSE train: %f, MSE val: %f\n",MSE_train,MSE_val);
                 
                 E{1}{j}=Ek_val;   
                 evl=[evl;eval];     
@@ -205,7 +207,25 @@ while eval<evaltot
         minerror=El(end);
         NNsetmin=NNset;       
     end
-fprintf('\n min error: %f, gradient: %f \n',minerror,min(dE))
+    
+n=size(X_val,2);    
+fprintf('\n min MSE: %e, MSE gradient: %e \n',minerror/n,min(dE)/n)
+dEl=[dEl,min(dE)/n]; %save MSE gradient
+
+if cycle>5
+    tr=dEl(size(dEl,2)-4:end);
+    if sum(tr>-NNset.trainParam.min_grad)>=5 %if the total MSE gradient of one cycle is smaller than the minimum allowed gradient add 1 to the stop counter
+        stopcount=1;
+    else
+        stopcount=0;
+    end
+end
+
+if stopcount
+    fprintf('Training stopped because the error has not consistently decreased with more than the minimum required gradient\n');
+    break   
+end
+
 % disp(minerror)    
 end
 
