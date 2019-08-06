@@ -1,33 +1,37 @@
-load('nnglobalsession.mat')
-
+clear all 
 close all
-vars=[];
-for j=1:5:(size(El,1))
-    n=El(j:j+4,1);
-    try
-    variance=var(El(j:j+4,2));
-    catch
-        dummy=2
-    end
-    vars=[vars;n(1),variance];
+a1=load('nnglobalsessionupto565.mat');
+a2=load('nnglobalsession565to645.mat');
+
+a3=load('nnglobalsession645845.mat');
+a4=load('nnglobalsession865andup.mat');
+a5=load('nnglobalsession1000.mat');
+neval=3001;
+El=a1.El;
+El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El];
+El(:,2)=El(:,2)/neval;
+Elmean=[];
+
+k=0;
+n_prev=El(1,1);
+m=0;
+i=1;
+variance =[];
+while i<size(El,1)
+   q=find(El(:,1)==El(i,1));
+   r=El(q,:);
+   Elmean=[Elmean; mean(r,1)];
+   variance=[variance;El(i,1),var(r(:,2))];
+   i=q(end)+1;
+   dummy=2;
 end
 
-figure('Position',[10,10,1000,600])
-subplot(211)
+figure('Position',[10,10,1200,400]);
 plot(El(:,1),El(:,2),'.')
 hold on 
-plot(El_mean(:,1),El_mean(:,2))
+plot(Elmean(:,1),Elmean(:,2));
 grid on
-legend('Quadratic error single run','Mean error')
-xlabel('Number neurons')
-ylabel('Final Quadratic Error (.)^2');
-title('Error after 200 iterations');
-
-subplot(212)
-plot(vars(:,1),vars(:,2))
-grid on 
-xlabel('Number neurons')
-ylabel('Variance')
-title('Variance of errors');
-
-saveas(gcf,'Report/plots/nnopti.eps','epsc')
+xlabel('Nr neurons')
+ylabel('MSE')
+legend('final MSE single run','Average final MSE');
+saveas(gcf,'Report/plots/nnopti.eps','epsc');

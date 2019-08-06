@@ -129,7 +129,7 @@ NNset.trainParam.mu_dec=0.05;
 El=[];
 El_mean=[];
 nrit=5;
-for n=565:20:1000
+for n=2000
     Emean=0;
     for k=1:nrit
         NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,inf,'random'); 
@@ -140,7 +140,7 @@ for n=565:20:1000
     El_mean=[El_mean;n,Emean];
 end
         
-save('nnglobalsession565andup.mat','El','El_mean')     
+save('nnglobalsession2000.mat','El','El_mean')     
 
 
  
