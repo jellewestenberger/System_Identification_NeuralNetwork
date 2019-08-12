@@ -33,17 +33,14 @@ X_val=X_val';
 
 NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random');
 NetFF.trainalg='traingd';
-NetFF.trainParam.mu=1e-10; 
- NetFF.trainParam.mu_inc=2;
- NetFF.trainParam.mu_dec=1/2;
+NetFF.trainParam.mu=1; 
+ NetFF.trainParam.mu_inc=10;
+ NetFF.trainParam.mu_dec=0.1;
 
 NetFF.LW=NetFF.LW/nrNodesHidden(1);
 NetFF.b{1}=min(Cm)*ones(size(NetFF.b{1}));
-% NetFF.b{1}=-1*ones(size(NetFF.b{1}));
-% load 'NNset.mat'FFNN
-% NetFF=NNset;
 
-[NetFF,~]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,1,[{'bi','wi','wo','bo'}],1);
+[NetFF,~]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,1,[{'bo','wo','wi','bi'}],0);
 
 
 
