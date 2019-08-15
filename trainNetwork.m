@@ -44,7 +44,7 @@ ekq=Y_train'-output.yk;
 ekq_val=Y_val'-output_val.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
 El=[sum(0.5*ekq_val.^2)];
-Ek_val_old=0;
+Ek_val_old=inf;
 El2=[];
 cyclel=[];
 dEl=[]; 
@@ -53,154 +53,143 @@ cycle=1;
 evaltot=NNset.trainParam.epochs;
 dE=ones(size(selector))*-1e-9;
 while eval<evaltot
-%     disp(num2str(cycle));
+    %     disp(num2str(cycle));
     % disp(E(eval_par(end))) %display newest error 
     cyclel=[cyclel, cycle];   
-      
-        NNset_old=NNset;
-%         output=calcNNOutput(NNset,X);
-        ekq=Y_train'-output.yk;
-        
-        Ek=sum(0.5*ekq.^2);
-        for p=1:length(selector)
-            
-            for j = 1:length(mu{1})            
-%             NNset_old=NNset; 
-%             
-%             
-%             output=calcNNOutput(NNset,X);
-%             ekq=Cm'-output.yk;
-%             Ek=sum(0.5*ekq.^2);
+
+    NNset_old=NNset;
+    %         output=calcNNOutput(NNset,X);
+    ekq=Y_train'-output.yk;
+
+    Ek=sum(0.5*ekq.^2);
+    for p=1:length(selector)
+
+        for j = 1:length(mu{1})            
             accept=0;
             m=1;
             while not(accept)
-            if strcmp(selector{1},'wi')
-               if strcmp(NNset.trainFunct(1),'radbas')
-                   J=radbasInputWeight(output,ekq,j);
-               elseif strcmp(NNset.trainFunct(1),'tansig')
-                   J=tansigInputWeight(output,ekq,j);
-               end
-               if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}{j});
-               elseif strcmp(trainalg,'traingd')
-                   d=mu{1}{j}*J;
-               end
-               NNset.IW{1}(:,j)=NNset.IW{1}(:,j)-d;
-               Curpar= NNset.IW{1}(:,j);
-            elseif strcmp(selector{1},'wo')
-                J=outputWeight(output,ekq); 
-                if strcmp(trainalg,'trainlm')
-                d=LM(J,Ek,mu{1}{j});
-               elseif strcmp(trainalg,'traingd')
-                   d=mu{1}{j}*J;
-               end
-                NNset.LW(1,:)=NNset.LW(1,:)-d';
-                Curpar=NNset.LW(1,:);
-            elseif strcmp(selector{1},'a')
-                J=radbasAmplitude(output,ekq);
-               if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}{j});
-               elseif strcmp(trainalg,'traingd')
-                   d=mu{1}{j}*J;
-               end
-                NNset.a{1}=NNset.a{1}-d; 
-                Curpar=NNset.a{1};
-            elseif strcmp(selector{1},'c')
-                J=radbasCenter(output,ekq,j);
-                if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}{j});
-               elseif strcmp(trainalg,'traingd')
-                   d=mu{1}{j}*J;
-               end
-                NNset.centers{1}(:,j)=NNset.centers{1}(:,j)-d;
-                Curpar=NNset.centers{1}(:,j);
-            elseif strcmp(selector{1},'bi')
-                J=inputBias(output,ekq);
-               if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}{j});
-               elseif strcmp(trainalg,'traingd')
-                   d=mu{1}{j}*J;
-               end
-                NNset.b{1}=NNset.b{1}-d;  
-                Curpar=NNset.b{1};
-            elseif strcmp(selector{1},'bo')
-                J=outputBias(ekq);
-                if strcmp(trainalg,'trainlm')
-               d=LM(J,Ek,mu{1}{j});
-               elseif strcmp(trainalg,'traingd')
-                   d=mu{1}{j}*J;
-               end
-                NNset.b{2}=NNset.b{2}-d;  
-                Curpar= NNset.b{2};
-            end
-            output_val=calcNNOutput(NNset,X_val);
-            eval=eval+1;
-            ekq_val=Y_val'-output_val.yk;
-            Ek_val=sum(0.5*ekq_val.^2); 
-            El2=[El2;Ek_val];
-            if (Ek_val>Ek_val_old)
-                if m<5
-                   m=m+1; 
-                   NNset=NNset_old;
-                   if strcmp(trainalg,'trainlm') && mu{1}{j}<mu_max
-                        mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
-                   elseif strcmp(trainalg,'traingd')
-                        mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
+                if strcmp(selector{1},'wi')
+                   if strcmp(NNset.trainFunct(1),'radbas')
+                        J=radbasInputWeight(output,ekq,j);
+                   elseif strcmp(NNset.trainFunct(1),'tansig')
+                        J=tansigInputWeight(output,ekq,j);
                    end
-                else 
-                    accept=1;                    
+                   if strcmp(trainalg,'trainlm')
+                        d=LM(J,Ek,mu{1}{j});
+                   elseif strcmp(trainalg,'traingd')
+                        d=mu{1}{j}*J;
+                   end
+                   NNset.IW{1}(:,j)=NNset.IW{1}(:,j)-d;
+                   Curpar= NNset.IW{1}(:,j);
+                elseif strcmp(selector{1},'wo')
+                    J=outputWeight(output,ekq); 
+                    if strcmp(trainalg,'trainlm')
+                        d=LM(J,Ek,mu{1}{j});
+                    elseif strcmp(trainalg,'traingd')
+                        d=mu{1}{j}*J;
+                    end
+                    fprintf("d:%f, mu:%f\n",sum(d),mu{1}{j});
+                    NNset.LW(1,:)=NNset.LW(1,:)-d';
+                    Curpar=NNset.LW(1,:);
+                elseif strcmp(selector{1},'a')
+                    J=radbasAmplitude(output,ekq);
+                    if strcmp(trainalg,'trainlm')
+                        d=LM(J,Ek,mu{1}{j});
+                    elseif strcmp(trainalg,'traingd')
+                        d=mu{1}{j}*J;
+                    end
+                    NNset.a{1}=NNset.a{1}-d; 
+                    Curpar=NNset.a{1};
+                elseif strcmp(selector{1},'c')
+                    J=radbasCenter(output,ekq,j);
+                    if strcmp(trainalg,'trainlm')
+                        d=LM(J,Ek,mu{1}{j});
+                    elseif strcmp(trainalg,'traingd')
+                        d=mu{1}{j}*J;
+                    end
+                    NNset.centers{1}(:,j)=NNset.centers{1}(:,j)-d;
+                    Curpar=NNset.centers{1}(:,j);
+                elseif strcmp(selector{1},'bi')
+                    J=inputBias(output,ekq);
+                    if strcmp(trainalg,'trainlm')
+                        d=LM(J,Ek,mu{1}{j});
+                    elseif strcmp(trainalg,'traingd')
+                       d=mu{1}{j}*J;
+                    end
+                    NNset.b{1}=NNset.b{1}-d;  
+                    Curpar=NNset.b{1};
+                elseif strcmp(selector{1},'bo')
+                    J=outputBias(ekq);
+                    if strcmp(trainalg,'trainlm')
+                        d=LM(J,Ek,mu{1}{j});
+                    elseif strcmp(trainalg,'traingd')
+                       d=mu{1}{j}*J;
+                    end
+                    NNset.b{2}=NNset.b{2}-d;  
+                    Curpar= NNset.b{2};
                 end
-            else
-                accept=1;
-                 if strcmp(trainalg,'trainlm')  
-                 mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
-                 elseif strcmp(trainalg,'traingd') && mu{1}{j}<mu_max
-                     mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
-                 end
-            end
-            
-            plotfig(output_val,1)
-            if accept
-                NNset_old=NNset;
-                output=calcNNOutput(NNset,X_train); 
-                ekq=Y_train'-output.yk; 
-                MSE_train=sum(ekq.^2)/size(ekq,2);
-                MSE_val=sum(ekq_val.^2)/size(ekq_val,2);
-                if (Ek_val-Ek_val_old)<0 && (Ek_val-Ek_val_old)<1e-2*min(dE)  %this prevents parameters never be chosen again if they increased the error for a run
-                dE(1)=(Ek_val-Ek_val_old);
-                dummy=3;
+                output_val=calcNNOutput(NNset,X_val);
+                eval=eval+1;
+                ekq_val=Y_val'-output_val.yk;
+                Ek_val=sum(0.5*ekq_val.^2); 
+                El2=[El2;Ek_val];
+                fprintf("Ek_val: %d, Ek_val_old: %d\n",Ek_val,Ek_val_old);
+                if (Ek_val>Ek_val_old)
+                    if m<5
+                       m=m+1; 
+                       NNset=NNset_old;
+                       if strcmp(trainalg,'trainlm') && mu{1}{j}<mu_max
+                            mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
+                       elseif strcmp(trainalg,'traingd')
+                            mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
+                       end
+                    else 
+                        accept=1;                    
+                    end
                 else
-                 dE(1)=1e-1*min(dE);
+                    accept=1;
+                    if strcmp(trainalg,'trainlm')  
+                        mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_dec;
+                    elseif strcmp(trainalg,'traingd') && mu{1}{j}<mu_max
+                        mu{1}{j}=mu{1}{j}*NNset.trainParam.mu_inc;
+                    end
                 end
-%                 fprintf("MSE train: %f, MSE val: %f\n",MSE_train,MSE_val);
-                
-                E{1}{j}=Ek_val;   
-                evl=[evl;eval];     
-                El=[El,Ek_val];
-                Ek_val_old=Ek_val;
-                
+
+                plotfig(output_val,1)
+                if accept
+                    NNset_old=NNset;
+                    output_val2=calcNNOutput(NNset,X_val);
+                    Ek_val2=sum(0.5*(Y_val'-output_val2.yk).^2);
+                    output=calcNNOutput(NNset,X_train); 
+                    ekq=Y_train'-output.yk; 
+                    MSE_train=sum(ekq.^2)/size(ekq,2);
+                    MSE_val=sum(ekq_val.^2)/size(ekq_val,2);
+                    if (Ek_val-Ek_val_old)<0 && (Ek_val-Ek_val_old)<1e-2*min(dE)  %this prevents parameters never be chosen again if they increased the error for a run
+                        dE(1)=(Ek_val-Ek_val_old);
+                        dummy=3;
+                    else
+                        dE(1)=1e-1*min(dE);
+                    end
+                    E{1}{j}=Ek_val;   
+                    evl=[evl;eval];     
+                    El=[El,Ek_val];
+                    Ek_val_old=Ek_val;
+                end
             end
-            
-            end
-            end
-            if cycle>4 && optimizeorder
-                [~,index]=min(dE);
-                shiftind=-(index-1);
-                dumm=2;
-            else
-                index=2;
-                shiftind=-1;
-            end
-%             fprintf('next parameter: %s \n',selector{index})
-            selector=circshift(selector,shiftind,2);    
-            mu=circshift(mu,shiftind,2)   ;
-            E=circshift(E,shiftind,2);
-            dE=circshift(dE,shiftind,2);
-            
-            
-%             E_old=circshift(E_old,-1,2);
-        
         end
+        if cycle>4 && optimizeorder
+            [~,index]=min(dE);
+            shiftind=-(index-1);
+            dumm=2;
+        else
+            index=2;
+            shiftind=-1;
+        end
+        selector=circshift(selector,shiftind,2);    
+        mu=circshift(mu,shiftind,2)   ;
+        E=circshift(E,shiftind,2);
+        dE=circshift(dE,shiftind,2);
+    end
     cycle=cycle+1;
     
     if El(end)<minerror
@@ -208,23 +197,23 @@ while eval<evaltot
         NNsetmin=NNset;       
     end
     
-n=size(X_val,2);    
-fprintf('\n min MSE: %e, MSE gradient: %e \n',minerror/n,min(dE)/n)
-dEl=[dEl,min(dE)/n]; %save MSE gradient
+    n=size(X_val,2);    
+    fprintf('\n min MSE: %e, MSE gradient: %e \n',minerror/n,min(dE)/n)
+    dEl=[dEl,min(dE)/n]; %save MSE gradient
 
-if cycle>5
-    tr=dEl(size(dEl,2)-4:end);
-    if sum(tr>-NNset.trainParam.min_grad)>=5 %if the total MSE gradient of one cycle is smaller than the minimum allowed gradient add 1 to the stop counter
-        stopcount=1;
-    else
-        stopcount=0;
+    if cycle>5
+        tr=dEl(size(dEl,2)-4:end);
+        if sum(tr>-NNset.trainParam.min_grad)>=5 %if the total MSE gradient of one cycle is smaller than the minimum allowed gradient add 1 to the stop counter
+            stopcount=1;
+        else
+            stopcount=0;
+        end
     end
-end
 
-if stopcount
-    fprintf('Training stopped because the error has not consistently decreased with more than the minimum required gradient\n');
-    break   
-end
+    if stopcount
+        fprintf('Training stopped because the error has not consistently decreased with more than the minimum required gradient\n');
+        break   
+    end
 
 % disp(minerror)    
 end
