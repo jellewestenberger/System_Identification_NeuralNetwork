@@ -1,5 +1,11 @@
 clear all 
 close all
+a=0;
+b=0;
+c=1;
+neval=3001;
+%%
+if a
 a1=load('nnglobalsessionupto565.mat');
 a2=load('nnglobalsession565to645.mat');
 
@@ -8,8 +14,7 @@ a4=load('nnglobalsession865andup.mat');
 a5=load('nnglobalsession1000.mat');
 % a6=load('nnglobalsession2000.mat');
 % a7=load('nnglobalsession1500.mat');
-% a8=load('nnglobalsession12501750.mat');
-neval=3001; % #datapoints 
+% a8=load('nnglobalsession12501750.mat
 El=a1.El;
 El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El;];%a6.El;a7.El;a8.El];
 El(:,2)=El(:,2)/neval;
@@ -43,7 +48,9 @@ xlabel('Nr neurons')
 ylabel('MSE')
 legend('final MSE single run','Average final MSE');
 saveas(gcf,'Report/plots/nnopti.eps','epsc');
-
+end
+%%
+if b
 b1=load("findoptimumRBFNN.mat");
 b2=load("findoptimumRBFNNupto38.mat");
 
@@ -82,3 +89,52 @@ plot(grad(:,1),grad_m);
 grid on 
 legend('Error gradient','Moving Average Error gradient (10 samples)','location','southeast')
 saveas(gcf,'Report/plots/nnopti2.eps','epsc');
+end 
+%%
+if c
+    clearvars -except c neval
+
+c1=load('findoptimumfixevalupto650.mat');
+c2=load('findoptimumfixeval660to.mat'); 
+Elc=[c1.El;c2.El]./[1,neval];
+Elmeanc=[c1.El_mean;c2.El_mean]./[1,neval];
+minE=inf; 
+search=1;
+k=1;
+window=15;
+while search && k<=size(Elmeanc,1)
+    if Elmeanc(k,2)<minE
+        minE=Elmeanc(k,2);
+        j=k;
+    end
+    
+    if (k-j)>=window
+        search=0;
+    end
+    
+    k=k+1; 
+end
+    
+nsel=Elmeanc(j,1);
+
+
+figure('Position',[10,10,1200,400])
+plot(Elc(:,1),Elc(:,2),'.');
+hold on 
+plot(Elmeanc(:,1),Elmeanc(:,2));
+
+hold on 
+plot(Elmeanc(:,1),Elmeanc(:,2),'.k');
+hold on 
+xline(nsel,'--')
+hold on 
+plot(Elmeanc(j,1),Elmeanc(j,2),'.g','MarkerSize',20);
+hold on 
+text(1.05*nsel,0.6*minE,strcat(num2str(nsel)," neurons:"));
+text(1.05*nsel,0.4*minE,strcat("Min MSE:",num2str(minE)));
+grid on
+xlim([min(Elc(:,1)),max(Elc(:,1))]);
+xlabel("neurons");
+ylabel("MSE [-]");
+saveas(gcf,"Report/plots/findoptinn.eps",'epsc');
+end

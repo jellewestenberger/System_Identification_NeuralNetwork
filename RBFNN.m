@@ -47,7 +47,15 @@ X_val=X_val';
 figure('Position',[100,10,1000,700])
 %% Linear regression 
 
-NNset_lin=createNNStructure(nrInput,[105],nrOutput,inputrange,Networktype,1000,'random');
+n=103;
+search=1
+E_old=inf;
+E=inf-1;
+result=0;
+while E<=E_old
+    result_old=result;
+    E_old=E;
+NNset_lin=createNNStructure(nrInput,[n],nrOutput,inputrange,Networktype,1000,'random');
 % NNset_lin.IW{1}=NNset_lin.IW{1}*1e-1;
 swit=1;
 if swit
@@ -66,6 +74,13 @@ NNset_lin.a{k}=a_est;
 end
 result=calcNNOutput(NNset_lin,X_val);
 E=(1/size(Y_val,1))*sum((result.yk'-Y_val).^2);
+NNset_lin_old=NNset_lin;
+n=n+1;
+end
+NNset_lin=NNset_lin_old;
+result=result_old;
+E=E_old;
+
 TRIeval = delaunayn(X(1:2,:)',{'Qt','Qbb','Qc'});
 TRIeval_val=delaunayn(X_val(1:2,:)',{'Qt','Qbb','Qc'});
 
@@ -100,21 +115,21 @@ saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_li
 saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.jpg'))
 
 %% Levenberg Marquard
-NNset=createNNStructure(nrInput,300,nrOutput,inputrange,Networktype,1000,'random');
+NNset=createNNStructure(nrInput,580,nrOutput,inputrange,Networktype,1000,'random');
 NNset.trainalg='trainlm';
 NNset.trainParam.mu=100;
 NNset.trainParam.mu_inc=10;
 NNset.trainParam.mu_dec=0.05;
-
-
+NNset.trainParam.epochs=inf; 
+NNset.trainParam.min_grad=1e-20;
 % Y_train_norm=normalize(Y_train,'zscore');
 
 % [~, ~,E1,evl1]=trainNetwork(NNset,Y_train,X,1,{'wi','a','c','wo'},0);
-% [test, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+[test, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
 % [~, ~,E3,evl3]=trainNetwork(NNset,Y_train,X,1,{'wo','c','a','wi'},1);
 %%
 % figure 
-% semilogy(evl1,E1)
+% semilogy(evl1,E1)The number of nodes will keep increasing until $\frac{\partial \hat{E}}{\partial n}$ becomes consistently larger than a threshold value. Where $\hat{E}$ is the average final error of the 5 trainings.\\
 % hold on 
 % semilogy(evl2,E2)
 % hold on
