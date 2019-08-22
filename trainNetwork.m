@@ -5,11 +5,12 @@ function [NNsetmin, minerror,El,evl]=trainNetwork(NNset,Y_train,X_train,X_val,Y_
 % Vtrue=X(3,:);
 global eval 
 eval=0;
-plotf=1;
+% plotf=1;
 
 eta=0.0000001;
 disp('Number of Neurons:');
-disp(length(NNset.LW));
+nn=length(NNset.LW);
+disp(nn);
 if size(X_train,1)==2
 TRIeval = delaunayn(X_train');
 TRIeval_val= delaunay(X_val');
@@ -44,7 +45,7 @@ ekq=Y_train'-output.yk;
 ekq_val=Y_val'-output_val.yk;
 init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
 El=[sum(0.5*ekq_val.^2)];
-Ek_val_old=inf;
+Ek_val_old=1e9;
 El2=[];
 cyclel=[];
 dEl=[]; 
@@ -88,7 +89,7 @@ while eval<evaltot
                     elseif strcmp(trainalg,'traingd')
                         d=mu{1}{j}*J;
                     end
-                    fprintf("d:%f, mu:%f\n",sum(d),mu{1}{j});
+%                     fprintf("d:%f, mu:%f\n",sum(d),mu{1}{j});
                     NNset.LW(1,:)=NNset.LW(1,:)-d';
                     Curpar=NNset.LW(1,:);
                 elseif strcmp(selector{1},'a')
@@ -133,7 +134,7 @@ while eval<evaltot
                 ekq_val=Y_val'-output_val.yk;
                 Ek_val=sum(0.5*ekq_val.^2); 
                 El2=[El2;Ek_val];
-                fprintf("Ek_val: %d, Ek_val_old: %d\n",Ek_val,Ek_val_old);
+%                 fprintf("Ek_val: %d, Ek_val_old: %d\n",Ek_val,Ek_val_old);
                 if (Ek_val>Ek_val_old)
                     if m<5
                        m=m+1; 
@@ -198,7 +199,7 @@ while eval<evaltot
     end
     
     n=size(X_val,2);    
-    fprintf('\n min MSE: %e, MSE gradient: %e \n',minerror/n,min(dE)/n)
+    fprintf('[%i neurons] min MSE: %e, MSE gradient: %e \n',nn,minerror/n,min(dE)/n)
     dEl=[dEl,min(dE)/n]; %save MSE gradient
 
     if cycle>5

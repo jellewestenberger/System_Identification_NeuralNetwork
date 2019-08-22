@@ -8,10 +8,10 @@ NNset.init=inittype;
 
 if strcmp(Networktype, 'ff')
     for h=1:(nrHiddenlayers)
-    NNset.b{h,1}=zeros(nrNodesHidden(h),1); %input bias weights     
+    NNset.b{h,1}=randn(nrNodesHidden(h),1); %input bias weights     
     NNset.trainFunct{h,1}='tansig';
     end
-    NNset.b{h+1,1}=zeros(nrOutput,1);
+    NNset.b{h+1,1}=ones(nrOutput,1);
     NNset.trainFunct{h+1,1}='purelin';
     NNset.name{1,1}='feedforward';
     

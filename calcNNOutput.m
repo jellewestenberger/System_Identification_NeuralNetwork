@@ -1,4 +1,5 @@
 function outputs=calcNNOutput(NNset,X)
+tic
 global eval 
 hiddenoutput={};
 Vj={};
@@ -71,4 +72,6 @@ outputs.dvjdwij=dvjdwij;
 outputs.dvjcij=dvjcij;
 outputs.dphidvj=dphidvj;
 % eval=eval+1;
+tel=toc;
+% fprintf('eval time: %f, data size: %i\n',tel,size(X,2));
 end

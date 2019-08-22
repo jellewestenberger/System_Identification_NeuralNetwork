@@ -10,7 +10,6 @@ load('F16traindata_CMabV_2018','Cm');
 
 load('NNset.mat');
 
-% Cm=-1*Cm;
 atrue_nom=normalize(atrue,'zscore');
 btrue_nom=normalize(Btrue,'zscore');
 fr_train=0.7;
@@ -32,15 +31,17 @@ X_val=X_val';
 
 
 NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,10000,'random');
+NetFF.LW=NetFF.LW*max(Cm);
 NetFF.trainalg='traingd';
-NetFF.trainParam.mu=1; 
+NetFF.trainParam.mu=1e-5; 
  NetFF.trainParam.mu_inc=1.05;
- NetFF.trainParam.mu_dec=0.1;
+ NetFF.trainParam.mu_dec=0.75;
 
 NetFF.LW=NetFF.LW/nrNodesHidden(1);
-NetFF.b{1}=min(Cm)*ones(size(NetFF.b{1}));
+NetFF.b{1}=ones(size(NetFF.b{1}));
+NetFF.b{2}=NetFF.b{2}*min(Cm);
 
-[NetFF,~]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,1,[{'wo'}],0);
+[NetFF,~]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,1,[{'wi','wo','bo','bi'}],1);
 
 
 

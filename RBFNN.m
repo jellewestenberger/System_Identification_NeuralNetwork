@@ -105,10 +105,12 @@ NNset.trainalg='trainlm';
 NNset.trainParam.mu=100;
 NNset.trainParam.mu_inc=10;
 NNset.trainParam.mu_dec=0.05;
+
+
 % Y_train_norm=normalize(Y_train,'zscore');
 
 % [~, ~,E1,evl1]=trainNetwork(NNset,Y_train,X,1,{'wi','a','c','wo'},0);
-% [~, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+% [test, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
 % [~, ~,E3,evl3]=trainNetwork(NNset,Y_train,X,1,{'wo','c','a','wi'},1);
 %%
 % figure 
@@ -129,18 +131,39 @@ NNset.trainParam.mu_dec=0.05;
 El=[];
 El_mean=[];
 nrit=5;
-for n=[1250,1750]
+search=1;
+n=660;
+figure()
+while search
     Emean=0;
     for k=1:nrit
-        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,inf,'random'); 
-        [~,E_i]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,400,'random'); 
+        NN_c.trainParam.min_grad=1e-15;
+        [~,E_i]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},0);
         Emean=Emean+(1/nrit)*E_i;
         El=[El;n,E_i];
     end
     El_mean=[El_mean;n,Emean];
+    n=n+10;
+%     if size(El_mean,1)>10
+%         dE=diff(El_mean(:,2),1);
+%         dummy=2;
+%         if sum(dE(length(dE)-4:end)>-1e-4)==5 
+%             search=0;
+%         end        
+%     end
+    cla();
+    plot(El(:,1),El(:,2),'.')
+    hold on
+    plot(El_mean(:,1),El_mean(:,2))
+    refreshdata()
+    pause(0.01)
+    if n==1001
+        search=0;
+    end
 end
         
-save('nnglobalsession12501750.mat','El','El_mean')     
+save('findoptimumfixeval660to.mat','El','El_mean')     
 
 
  
