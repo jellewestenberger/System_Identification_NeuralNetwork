@@ -2,7 +2,8 @@ clear all
 close all
 a=0;
 b=0;
-c=1;
+c=0;
+d=1;
 neval=3001;
 %%
 if a
@@ -17,7 +18,7 @@ a5=load('nnglobalsession1000.mat');
 % a8=load('nnglobalsession12501750.mat
 El=a1.El;
 El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El;];%a6.El;a7.El;a8.El];
-El(:,2)=El(:,2)/neval;
+El(:,2)=2*El(:,2)/neval;
 Elmean=[];
 
 k=0;
@@ -56,8 +57,8 @@ b2=load("findoptimumRBFNNupto38.mat");
 
 El2=b2.El; 
 El3=b1.El;
-El2=[El2;El3]./[1,neval];
-Elm=[b2.El_mean;b1.El_mean]./[1,neval];
+El2=[El2;El3]./[1,0.5*neval];
+Elm=[b2.El_mean;b1.El_mean]./[1,0.5*neval];
 grad=diff(Elm(:,2));
 grad=[Elm(2:end,1),grad];
 grad_m=movmean(grad(:,2),5);
@@ -92,12 +93,12 @@ saveas(gcf,'Report/plots/nnopti2.eps','epsc');
 end 
 %%
 if c
-    clearvars -except c neval
+   
 
 c1=load('findoptimumfixevalupto650.mat');
 c2=load('findoptimumfixeval660to.mat'); 
-Elc=[c1.El;c2.El]./[1,neval];
-Elmeanc=[c1.El_mean;c2.El_mean]./[1,neval];
+Elc=[c1.El;c2.El]./[1,0.5*neval];
+Elmeanc=[c1.El_mean;c2.El_mean]./[1,0.5*neval];
 minE=inf; 
 search=1;
 k=1;
@@ -126,7 +127,7 @@ plot(Elmeanc(:,1),Elmeanc(:,2));
 hold on 
 plot(Elmeanc(:,1),Elmeanc(:,2),'.k');
 hold on 
-xline(nsel,'--')
+line([nsel,nsel],get(gca,'ylim'))
 hold on 
 plot(Elmeanc(j,1),Elmeanc(j,2),'.g','MarkerSize',20);
 hold on 
@@ -137,4 +138,90 @@ xlim([min(Elc(:,1)),max(Elc(:,1))]);
 xlabel("neurons");
 ylabel("MSE [-]");
 saveas(gcf,"Report/plots/findoptinn.eps",'epsc');
+end
+
+
+if 0
+load('NNsetf.mat')
+load('atrue.mat');
+load('Btrue.mat');
+load('Vtrue.mat');
+load('T.mat');
+load_f16data2018;
+atrue_nom=normalize(atrue,'zscore');
+btrue_nom=normalize(Btrue,'zscore');   
+X=[atrue_nom,btrue_nom]';
+fr_train=0.7;
+fr_val=1-fr_train;
+[X_train,X_val,Y_train,Y_val]=splitData([atrue_nom,btrue_nom],Cm,fr_train,fr_val,1);
+X_denom=[atrue,Btrue]'.*(180/pi);
+TRIeval = delaunayn(X_denom');
+nnoutput=calcNNOutput(NNsetf,X);
+Cmnn=nnoutput.yk;
+MSE=sum((Cmnn'-Cm).^2)/size(X_denom,2);
+figure('Position',[10,10,1800,600]);
+subplot(131)
+trisurf(TRIeval,X_denom(1,:),X_denom(2,:),Cm,'edgecolor','none')
+hold on 
+plot3(X_denom(1,:),X_denom(2,:),Cmnn,'.k','MarkerSize',5)
+pbaspect([1,1,1])
+legend('Measured','RBFNN','location','best')
+view(135,20)
+set(gcf,'Renderer','OpenGL');
+hold on;
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong;
+title('Measured')
+xlabel('\alpha [deg]')
+ylabel('\beta [deg]')
+zlabel('Cm [-]')
+
+subplot(132)
+trisurf(TRIeval,X_denom(1,:),X_denom(2,:),Cmnn,'edgecolor','none')
+pbaspect([1,1,1])
+view(135,20)
+set(gcf,'Renderer','OpenGL');
+hold on;
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong;
+title('RBFNN Output')
+xlabel('\alpha [deg]')
+ylabel('\beta [deg]')
+zlabel('Cm [-]')    
+
+subplot(133)
+trisurf(TRIeval,X_denom(1,:),X_denom(2,:),(Cmnn'-Cm).^2,'edgecolor','none')
+% plot(Cmnn'-Cm);
+pbaspect([1,1,1])
+view(135,20)
+set(gcf,'Renderer','OpenGL');
+hold on;
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong;
+title('Quadratic Residual')
+xlabel('\alpha [deg]')
+ylabel('\beta [deg]')
+zlabel('Cm [-]^2')    
+saveas(gcf,'Report/plots/finalrbfnn.eps','epsc')
+    
+end
+
+
+if 1
+   
+    set1=load("FFset1.mat");
+    set2=load("FFset2.mat");
+    set3=load("FFset3.mat");
+    set4=load("FFset4.mat");
+    set5=load("FFset5.mat");
+    
 end

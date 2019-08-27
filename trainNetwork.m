@@ -199,7 +199,7 @@ while eval<evaltot
     end
     
     n=size(X_val,2);    
-    fprintf('[%i neurons] min MSE: %e, MSE gradient: %e \n',nn,minerror/n,min(dE)/n)
+    fprintf('[%i neurons, eval %i/%i] min MSE: %e, MSE gradient: %e \n',nn,eval,evaltot,2*minerror/n,min(dE)/n) % MSE is defined as sum(e^2)/n while the error above is calculated as sum(0.5*e^2)
     dEl=[dEl,min(dE)/n]; %save MSE gradient
 
     if cycle>5
@@ -214,6 +214,9 @@ while eval<evaltot
     if stopcount
         fprintf('Training stopped because the error has not consistently decreased with more than the minimum required gradient\n');
         break   
+    end
+    if eval>=evaltot
+        fprintf("Total evaluations exceeded max allowed evaluations. Training Stopped\n");
     end
 
 % disp(minerror)    

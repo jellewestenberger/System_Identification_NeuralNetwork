@@ -106,8 +106,8 @@ lighting phong;
 drawnow();
 
 subplot(122)
-trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',Y_val-result.yk','edgecolor','none')
-title('Residual','interpreter','latex')
+trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',(Y_val-result.yk').^2,'edgecolor','none')
+title('Quadratic Residual','interpreter','latex')
 pbaspect([1,1,1])
 view(135,20)
 
@@ -124,30 +124,21 @@ NNset.trainParam.epochs=inf;
 NNset.trainParam.min_grad=1e-20;
 % Y_train_norm=normalize(Y_train,'zscore');
 
-% [~, ~,E1,evl1]=trainNetwork(NNset,Y_train,X,1,{'wi','a','c','wo'},0);
-[test, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+
+% [NNsetf, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},0);
+% save('NNsetf','NNsetf');
 % [~, ~,E3,evl3]=trainNetwork(NNset,Y_train,X,1,{'wo','c','a','wi'},1);
-%%
-% figure 
-% semilogy(evl1,E1)The number of nodes will keep increasing until $\frac{\partial \hat{E}}{\partial n}$ becomes consistently larger than a threshold value. Where $\hat{E}$ is the average final error of the 5 trainings.\\
-% hold on 
-% semilogy(evl2,E2)
-% hold on
-% semilogy(evl3,E3)
-% hold off 
-% grid on 
-% title('Training order comparison')
-% legend('wi-a-c-wo','wo-c-a-wi','optimize order','interpreter','latex')
-% xlabel('evaluation','interpreter','latex')
-% ylabel('error [0.5(.)^2]','interpreter','latex')
-% saveas(gcf,'Report/plots/ordercomp.eps','epsc')
+
 
 %%
+counter=0;
+window=15;
 El=[];
 El_mean=[];
+minE=inf;
 nrit=5;
 search=1;
-n=660;
+n=10;
 figure()
 while search
     Emean=0;
@@ -160,109 +151,121 @@ while search
     end
     El_mean=[El_mean;n,Emean];
     n=n+10;
-%     if size(El_mean,1)>10
-%         dE=diff(El_mean(:,2),1);
-%         dummy=2;
-%         if sum(dE(length(dE)-4:end)>-1e-4)==5 
-%             search=0;
-%         end        
-%     end
+    if Emean<minE
+        minE=Emean;
+        counter=0;
+    else
+        counter=counter+1;
+    end
     cla();
     plot(El(:,1),El(:,2),'.')
     hold on
     plot(El_mean(:,1),El_mean(:,2))
     refreshdata()
     pause(0.01)
-    if n==1001
+    if counter>=window
         search=0;
     end
 end
         
 save('findoptimumfixeval660to.mat','El','El_mean')     
-
-
- 
-
-%% golden ratio search:
-GR=(1+sqrt(5))/2.; 
-a=10;
-b=1000;
-c=b-((b-a)/GR);
-d=a+((b-a)/GR);
-c=floor(c); %we need integers for number of neurons
-d=floor(d);
-El_accept=[0,0];
+%% Train optimal number of neurons extensively 
+Emin=inf;
 El=[];
-E_d_kl=[];
-while abs(c-d)>=1
-    if size(find(El_accept(:,1)==c),1)==1    
-        i=find(El_accept(:,1)==c);
-        E_c=El_accept(i,2);
-    else
-        E_c_kl=[];
-        for k=1:5
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random');  
-        [~,E_c_k]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
-        E_c_kl=[E_c_kl,E_c_k];
-     
-        El=[El;floor(c),E_c_k];
-
-        end
-        E_c=mean(E_c_kl);
-        El_accept=[El_accept; c,E_c];
-    end   
-    
-       
-    if size(find(El_accept(:,1)==d),1)==1    
-        i=find(El_accept(:,1)==d);
-        E_d=El_accept(i,2);
-    else
-        E_d_kl=[];
-        for k =1:5
-        NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,200,'random');  
-        [~,E_d_k]=trainNetwork(NN_d,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
-        E_d_kl=[E_d_kl,E_d_k];
+for k=1:5
+        NN_c=createNNStructure(nrInput,580,nrOutput,inputrange,Networktype,inf,'random'); 
+        NN_c.trainParam.min_grad=1e-13;
+        [NNsetf,E_i,~,evl]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},0);
         
-        El=[El;floor(d),E_d_k];
-
-%         refreshdata
-%         drawnow
+        El=[El;n,E_i];
+        if E_i<Emin
+            Emin=E_i;
+            save('NNsetf','NNsetf','evl')
         end
-        E_d=mean(E_d_kl);
-        El_accept=[El_accept; d,E_d];
-    end   
+        
+end
+%% 
 
-% NN_d=createNNStructure(nrInput,[d],nrOutput,inputrange,Networktype,'ones');   
+% %% golden ratio search:
+% GR=(1+sqrt(5))/2.; 
+% a=10;
+% b=1000;
+% c=b-((b-a)/GR);
+% d=a+((b-a)/GR);
+% c=floor(c); %we need integers for number of neurons
+% d=floor(d);
+% El_accept=[0,0];
+% El=[];
+% E_d_kl=[];
+% while abs(c-d)>=1
+%     if size(find(El_accept(:,1)==c),1)==1    
+%         i=find(El_accept(:,1)==c);
+%         E_c=El_accept(i,2);
+%     else
+%         E_c_kl=[];
+%         for k=1:5
+%         NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random');  
+%         [~,E_c_k]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+%         E_c_kl=[E_c_kl,E_c_k];
+%      
+%         El=[El;floor(c),E_c_k];
 % 
-% [~,E_d]=trainNetwork(NN_d,Y_train,X,10,0.1,100,1,[1,1,1,1]);
-    if E_c< E_d
-        b=d;
-    else
-        a=c;
-    end
-    c=round(b-((b-a)/GR),0);
-    d=round(a+((b-a)/GR),0);
-
-end
+%         end
+%         E_c=mean(E_c_kl);
+%         El_accept=[El_accept; c,E_c];
+%     end   
+%     
+%        
+%     if size(find(El_accept(:,1)==d),1)==1    
+%         i=find(El_accept(:,1)==d);
+%         E_d=El_accept(i,2);
+%     else
+%         E_d_kl=[];
+%         for k =1:5
+%         NN_d=createNNStructure(nrInput,[floor(d)],nrOutput,inputrange,Networktype,200,'random');  
+%         [~,E_d_k]=trainNetwork(NN_d,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+%         E_d_kl=[E_d_kl,E_d_k];
+%         
+%         El=[El;floor(d),E_d_k];
+% 
+% %         refreshdata
+% %         drawnow
+%         end
+%         E_d=mean(E_d_kl);
+%         El_accept=[El_accept; d,E_d];
+%     end   
+% 
+% % NN_d=createNNStructure(nrInput,[d],nrOutput,inputrange,Networktype,'ones');   
+% % 
+% % [~,E_d]=trainNetwork(NN_d,Y_train,X,10,0.1,100,1,[1,1,1,1]);
+%     if E_c< E_d
+%         b=d;
+%     else
+%         a=c;
+%     end
+%     c=round(b-((b-a)/GR),0);
+%     d=round(a+((b-a)/GR),0);
+% 
+% end
 %%
 
-
-%%
-if size(find(El_accept(:,1)==c),1)==1    
-        i=find(El_accept(:,1)==c);
-        E_c=El_accept(i,2);
-    else
-        NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random');  
-        [~,E_c]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
-        El_accept=[El_accept; c,E_c];
-        
-end
-%%
-TRIeval = delaunayn(X_train');
-
-figure
-trisurf(TRIeval,X_train(1,:)',X_train(2,:)',Y_train,'edgecolor','none');
-hold on
-plot3(X_train(1,:),X_train(2,:),result.yk,'.')
-
+% 
+% %%
+% if size(find(El_accept(:,1)==c),1)==1    
+%         i=find(El_accept(:,1)==c);
+%         E_c=El_accept(i,2);
+%     else
+%         NN_c=createNNStructure(nrInput,[floor(c)],nrOutput,inputrange,Networktype,200,'random');  
+%         [~,E_c]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,1,{'wo','c','a','wi'},0);
+%         El_accept=[El_accept; c,E_c];
+%         
+% end
+% %%
+% TRIeval = delaunayn(X_train');
+% 
+% figure
+% trisurf(TRIeval,X_train(1,:)',X_train(2,:)',Y_train,'edgecolor','none');
+% hold on
+% plot3(X_train(1,:),X_train(2,:),result.yk,'.')
+% 
 
