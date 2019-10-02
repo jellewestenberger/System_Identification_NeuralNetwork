@@ -135,6 +135,7 @@ while eval<evaltot
                 Ek_val=sum(0.5*ekq_val.^2); 
                 El2=[El2;Ek_val];
 %                 fprintf("Ek_val: %d, Ek_val_old: %d\n",Ek_val,Ek_val_old);
+               
                 if (Ek_val>Ek_val_old)
                     if m<5
                        m=m+1; 
@@ -277,7 +278,8 @@ function dEdWij=tansigInputWeight(outputs,ekq,v)
 %     E_old(1)=E(1);
     dPhijdVj=outputs.dphidvj{1};%(4*exp(-2*outputs.vj{1}))./((1+exp(-2*outputs.vj{1})).^2);
     dVjdWij=outputs.dvjdwij;%yi{1};
-    dEdWij=dVjdWij{1,v}.*dPhijdVj*ekq'*(-1).*NNset.LW';
+    dEdWij=dVjdWij{1,v}.*dPhijdVj.*ekq*(-1).*NNset.LW';
+    dEdWij=sum(dEdWij,2);
 %     d=[];
 %     d=LM(dEdWij,E(1),mu{1}(v));
 %     for i=1:size(dVjdWij,1)

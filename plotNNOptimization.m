@@ -215,13 +215,53 @@ saveas(gcf,'Report/plots/finalrbfnn.eps','epsc')
     
 end
 
-
 if 1
    
-    set1=load("FFset1.mat");
-    set2=load("FFset2.mat");
-    set3=load("FFset3.mat");
-    set4=load("FFset4.mat");
-    set5=load("FFset5.mat");
-    
+set={}
+nrsets=9; 
+colors{1}=[0,12,255]/255; %blue 
+colors{2}=[66,255,0]/255; %green 
+colors{3}=[255,216,0]/255; %yellow 
+colors{4}=[212,150,0]/255; %orange 
+colors{5}=[255,0,0]/255; %red 
+colors{6}=[176,6,255]/255; %purple 
+colors{7}=[0,0,0]/255; %black 
+colors{8}=[2,246,255]/255; %light blue 
+colors{9}=[16,147,6]/255; %dark green   
+legstr={}
+for o=1:nrsets
+   legstr{o}=strcat("set"," ",num2str(o)); 
 end
+f=figure('Position',[10,10,1200,600]);
+    for k=1:nrsets
+        set{k}=load(strcat("FFset",num2str(k),".mat"));
+%     set1=load("FFset1.mat");
+%     set2=load("FFset2.mat");
+%     set3=load("FFset3.mat");
+%     set4=load("FFset4.mat");
+%     set5=load("FFset5.mat");
+%     set6=load("FFset6.mat");
+%     set7=load("FFset7.mat");
+%     set8=load("FFset8.mat");
+%     set9=load("FFset9.mat");
+%     subplot(floor(sqrt(nrsets)),floor(nrsets/floor(sqrt(nrsets))),k)
+    for j=1:size(set{k}.Eprop,1)
+       hi=semilogy(set{k}.Eprop{j,2},set{k}.Eprop{j,1}./(0.5*3001),'color',colors{k},'LineWidth',1.1);
+      
+       hold on
+    end
+    h(k)=hi(1);
+%     title(strcat("set"," ",num2str(k)));
+    xlabel('evaluations')
+    ylabel('MSE')
+    grid on 
+%     ylim([1e-5,1e-2]);
+
+    end
+    title("MSE Propagation");
+    legend(h,legstr);
+    xlim([0,4010]);
+    
+    saveas(gcf,'Report/plots/erorpropset.eps','epsc')
+end
+

@@ -30,197 +30,26 @@ X_train=X_train';
 X_val=X_val';
 
 %% Sensitivity Initial Parameters 
-%set 1
-rng(50);
-if 1
-El=[];
-Eprop={};
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset1','El','Eprop','evl');
-end
+NNset=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
+NNset.trainalg='traingd'; %gradient descent = error back propagation 
+NNset.trainParam.mu=1e-5; 
+NNset.trainParam.mu_inc=2;
+NNset.trainParam.mu_dec=0.8;
+NNset.trainParam.min_grad=1e-10;
 
 if 1
-%set 2
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=5*randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset2','El','Eprop','evl');
-end
-%set 3
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=0.2*randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset3','El','Eprop','evl');
-end
-%set 4
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.05;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset4','El','Eprop','evl');
-end
-
-%set 5
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.002;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset5','El','Eprop','evl');
-end
-
-%set 6
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.05;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0 ,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset6','El','Eprop','evl');
-end
-%set 7
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.002;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.01;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset7','El','Eprop','evl');
-end
-%set 8
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.05;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset8','El','Eprop','evl');
-end
-%set 9
-if 1
-Eprop={};
-El=[];
-for k =1:5
-NetFF=createNNStructure(nrInput,nrNodesHidden,nrOutput,inputrange,Networktype,4000,'random');
-NetFF.LW=randn(size(NetFF.LW))*0.01;
-NetFF.IW{1,1}=randn(size(NetFF.IW{1,1}));
-NetFF.b{1,1}=randn(size(NetFF.b{1,1}))*0.01;
-NetFF.b{2,1}=randn(size(NetFF.b{2,1}))*0.002;
-NetFF.trainalg='traingd'; %gradient descent = error back propagation 
-NetFF.trainParam.mu=1e-5; 
-NetFF.trainParam.mu_inc=2;
-NetFF.trainParam.mu_dec=0.8;
-NetFF.trainParam.min_grad=1e-10;
-[NetFF,Ei,Elist,evl]=trainNetwork(NetFF,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
-El=[El;Ei./(0.5*size(X_val,2)),evl(end)];
-Eprop{k}=Elist;
-end
-save('FFset9','El','Eprop','evl');
+do_sensitivity_ana;
 end
 %%
+NNset=createNNStructure(nrInput,100,nrOutput,inputrange,Networktype,4000,'random');
+NNset.LW=randn(size(NNset.LW))*0.01;
+NNset.IW{1,1}=randn(size(NNset.IW{1,1}));
+NNset.b{1,1}=randn(size(NNset.b{1,1}))*0.01;
+NNset.b{2,1}=randn(size(NNset.b{2,1}))*0.002;
+NNset.trainalg='trainlm';
+NNset.trainParam.mu=1e5; 
+NNset.trainParam.mu_inc=10;
+NNset.trainParam.mu_dec=0.05;
+NNset.trainParam.min_grad=1e-10;
+
+do_sensitivity_ana;
