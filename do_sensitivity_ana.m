@@ -11,7 +11,7 @@ end
 trainParam=NNset.trainParam;
 trainalg=NNset.trainalg;
 epochs=trainParam.epochs;
-if 0 
+if 0
 %set 1
 rng(50);
 if 1
@@ -32,8 +32,8 @@ Eprop{k,2}=evl;
 end
 save(strcat(Networktype,trainalg,'set1'),'El','Eprop','evl');
 end
-
-if 1
+end
+if 0
 %set 2
 Eprop={};
 El=[];
@@ -53,7 +53,7 @@ end
 save(strcat(Networktype,trainalg,'set2'),'El','Eprop','evl');
 end
 %set 3
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -72,7 +72,7 @@ end
 save(strcat(Networktype,trainalg,'set3'),'El','Eprop','evl');
 end
 %set 4
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -92,7 +92,7 @@ save(strcat(Networktype,trainalg,'set4'),'El','Eprop','evl');
 end
 
 %set 5
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -112,7 +112,7 @@ save(strcat(Networktype,trainalg,'set5'),'El','Eprop','evl');
 end
 
 %set 6
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -131,7 +131,7 @@ end
 save(strcat(Networktype,trainalg,'set6'),'El','Eprop','evl');
 end
 %set 7
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -161,6 +161,7 @@ NNset.b{1,1}=randn(size(NNset.b{1,1}))*0.01;
 NNset.b{2,1}=randn(size(NNset.b{2,1}))*0.05;
 NNset.trainalg=trainalg; %gradient descent = error back propagation 
 NNset.trainParam=trainParam;
+save('NNFFset8','NNset');
 [NNset,Ei,Elist,evl]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,0,[{'bo','wo','bi','wi'}],0);
 El=[El;Ei./(0.5*size(X_val,2)),evl(end)]; %convert quadratic error to MSE
 Eprop{k,1}=Elist;
@@ -169,7 +170,7 @@ end
 save(strcat(Networktype,trainalg,'set8'),'El','Eprop','evl');
 end
 %set 9
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -187,7 +188,7 @@ Eprop{k,2}=evl;
 end
 save(strcat(Networktype,trainalg,'set9'),'El','Eprop','evl');
 end
-end
+
 
 %% plotting 
 
