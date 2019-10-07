@@ -84,7 +84,7 @@ while search
         NN_c.b{1,1}=randn(size(NN_c.b{1,1}))*0.01;
         NN_c.b{2,1}=randn(size(NN_c.b{2,1}))*0.05;
         NN_c.trainalg=trainal; %gradient descent = error back propagation 
-        NN_c.trainParam=trainp;
+        NN_c.trainParam=trainp; 
         NN_c.trainParam.epochs=400;
         NN_c.trainParam.min_grad=1e-15;
         [~,E_i]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,0,{'bo','wo','bi','wi'},0);
