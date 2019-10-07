@@ -65,34 +65,34 @@ end
 %% Find optimal number of neurons 
 
 counter=0;
-window=15;
+window=30;
 El=[];
 El_mean=[];
 minE=inf;
 nrit=5;
 search=1;
-n=10;
+n=5;
 figure()
 while search
     Emean=0;
     for k=1:nrit
         
         
-        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,400,'random');
+        NN_c=createNNStructure(nrInput,n,nrOutput,inputrange,Networktype,1000,'random');
         NN_c.LW=randn(size(NN_c.LW))*0.01;
         NN_c.IW{1,1}=randn(size(NN_c.IW{1,1}));
         NN_c.b{1,1}=randn(size(NN_c.b{1,1}))*0.01;
         NN_c.b{2,1}=randn(size(NN_c.b{2,1}))*0.05;
         NN_c.trainalg=trainal; %gradient descent = error back propagation 
         NN_c.trainParam=trainp;
-        NN_c.trainParam.epochs=400;
+        NN_c.trainParam.epochs=1000;
         NN_c.trainParam.min_grad=1e-15;
         [~,E_i]=trainNetwork(NN_c,Y_train,X_train,X_val,Y_val,0,{'bo','wo','bi','wi'},0);
         Emean=Emean+(1/nrit)*E_i;
         El=[El;n,E_i];
     end
     El_mean=[El_mean;n,Emean];
-    n=n+10;
+    n=n+5;
     if Emean<minE
         minE=Emean;
         counter=0;
@@ -106,7 +106,7 @@ while search
     refreshdata()
     pause(0.01)
     if counter>=window
-        search=0;
+        search=1;
     end
 end
 save('fffindoptimum.mat','El','El_mean')          
