@@ -63,7 +63,7 @@ end
 
 
 %% Find optimal number of neurons 
-
+if 0
 counter=0;
 window=30;
 El=[];
@@ -110,4 +110,70 @@ while search
     end
 end
 save('fffindoptimum.mat','El','El_mean')          
+end
+
+%% Compare RBFNN FFNN and Polynomial 
+if 0
+FFNNset={};
+FFEmin={};
+FFEl={};
+FFevl={};
+FFNNsetmin={};
+
+for it=1:5
+FFNNset=createNNStructure(nrInput,100,nrOutput,inputrange,'ff',2000,'random');
+FFNNset.LW=randn(size(FFNNset.LW))*0.01;
+FFNNset.IW{1,1}=randn(size(FFNNset.IW{1,1}));
+FFNNset.b{1,1}=randn(size(FFNNset.b{1,1}))*0.01;
+FFNNset.b{2,1}=randn(size(FFNNset.b{2,1}))*0.05;
+FFNNset.trainParam.min_grad=1e-10;
+[FFNNsetmin{it},FFEmin{it},FFEl{it},FFevl{it}]=trainNetwork(FFNNset,Y_train,X_train,X_val,Y_val,0,{'bo','wo','bi','wi'},0);
+end
+save('FFComp','FFNNsetmin','FFEmin','FFEl','FFevl');
+
+
+
+
+
+RBFFEmin={};
+RBFFEl={};
+RBFFevl={};
+RBFFNNsetmin={};
+for it=1:5
+RBFNNset=createNNStructure(nrInput,100,nrOutput,inputrange,'rbf',2000,'random');
+RBFNNset.LW=randn(size(RBFNNset.LW))*0.01;
+RBFNNset.IW{1,1}=randn(size(RBFNNset.IW{1,1}));
+RBFNNset.trainParam.min_grad=1e-10;
+[RBFFNNsetmin{it},RBFFEmin{it},RBFFEl{it},RBFFevl{it}]=trainNetwork(RBFNNset,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},0);
+end
+save('RBFComp','RBFFNNsetmin','RBFFEmin','RBFFEl','RBFFevl')
+
+end
+
+% plotting 
+ffdat=load('FFComp.mat');
+rbfdat=load('RBFComp.mat');
+
+figure()
+neval=3001; %number of evaluation datapoints. For correcting quadratic error to MSE 
+subplot(211)
+for k=1:5
+   semilogy(ffdat.FFevl{k},ffdat.FFEl{k}./(0.5*neval))
+   hold on  
+end
+xlim([0,2000])
+ylim([1e-5,1e-2]);
+grid on
+hold off
+
+subplot(212)
+for k=1:5
+   semilogy(rbfdat.RBFFevl{k},rbfdat.RBFFEl{k}./(0.5*neval))
+   hold on  
+end
+xlim([0,2000])
+ylim([1e-5,1e-2])
+grid on
+hold off
+
 

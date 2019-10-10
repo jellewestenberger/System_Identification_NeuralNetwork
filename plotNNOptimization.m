@@ -215,7 +215,7 @@ saveas(gcf,'Report/plots/finalrbfnn.eps','epsc')
     
 end
 
-if 1
+if 0
    
 set={}
 nrsets=9; 
@@ -263,5 +263,52 @@ f=figure('Position',[10,10,1200,600]);
     xlim([0,4010]);
     
     saveas(gcf,'Report/plots/erorpropset.eps','epsc')
+end
+
+if 1 %optimum FFNN
+    
+       
+ffopt=load('fffindoptimum.mat'); 
+    Elc=[ffopt.El;ffopt.El]./[1,0.5*neval];
+Elmeanc=[ffopt.El_mean]./[1,0.5*neval]; %correct from squared error sum(0.5()^2) to MSE sum(e^2)/n `
+minE=inf; 
+search=1;
+k=1;
+window=15;
+while search && k<=size(Elmeanc,1)
+    if Elmeanc(k,2)<minE
+        minE=Elmeanc(k,2);
+        j=k;
+    end
+    
+    if (k-j)>=window
+        search=0;
+    end
+    
+    k=k+1; 
+end
+    
+nsel=Elmeanc(j,1);
+    
+    
+    
+ 
+    figure('Position',[10,10,1200,400])
+    plot(Elc(:,1),Elc(:,2),'.');
+    hold on 
+    plot(Elmeanc(:,1),Elmeanc(:,2));
+    hold on
+    plot(Elmeanc(:,1),Elmeanc(:,2),'.k');
+    hold on 
+    line([nsel,nsel],get(gca,'ylim'))
+    hold on
+    plot(Elmeanc(j,1),Elmeanc(j,2),'.g','MarkerSize',20);
+    text(1.05*nsel,0.8*minE,strcat(num2str(nsel)," neurons:"));
+    text(1.05*nsel,0.6*minE,strcat("Min MSE:",num2str(minE)));
+    grid on
+    xlabel('neurons');
+    ylabel('MSE [-]')
+    xlim([min(Elc(:,1)),max(Elc(:,1))]);
+    saveas(gcf,'Report/plots/FFNNOptiN.eps','epsc')
 end
 
