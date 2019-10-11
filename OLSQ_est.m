@@ -1,4 +1,4 @@
-function [A,theta]=OLSQ_est(order,X,Y,type)
+function [A,theta,exps]=OLSQ_est(order,X,Y,type)
 nrvars=size(X,2);
 
 if strcmp(type,'simple')

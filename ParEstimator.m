@@ -39,7 +39,8 @@ fr_val=1-fr_train;
 %% Linear Regression problem [sumorder]
 
 [ordersum,errl2]=find_optimal_order_OLS(X_train,Y_train,X_val,Y_val,0,'sumorder');
-[A_sumorder,theta_sumorder]=OLSQ_est(ordersum,X_train(:,1:2),Y_train,'sumorder');
+[A_sumorder,theta_sumorder,optexps]=OLSQ_est(ordersum,X_train(:,1:2),Y_train,'sumorder');
+Afull=x2fx([atrue,Btrue],optexps); %used for calculating the output with all datapoints (using the set of parameters obtained from train)
 estimatedCm_train=A_sumorder*theta_sumorder;
 res_train=Y_train-estimatedCm_train;
 E_train=sum(res_train.^2)/size(res_train,1); %MSE
@@ -56,7 +57,7 @@ E_train=sum(res_train.^2)/size(res_train,1); %MSE
         refreshdata
         
  end
-
+    save('Data/sumorderpolyfull','Afull','theta_sumorder');
 
 
  

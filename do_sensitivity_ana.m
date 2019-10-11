@@ -14,7 +14,7 @@ epochs=trainParam.epochs;
 if 0
 %set 1
 rng(50);
-if 1
+if 0
 El=[];
 Eprop={};
 for k =1:5
@@ -150,7 +150,7 @@ end
 save(strcat(Networktype,trainalg,'set7'),'El','Eprop','evl');
 end
 %set 8
-if 1
+if 0
 Eprop={};
 El=[];
 for k =1:5
@@ -194,7 +194,7 @@ end
 
 if 1
 close all   
-set={}
+set={};
 nrsets=9; 
 w=floor(sqrt(nrsets-1));
 colors{1}=[0,12,255]/255; %blue 
@@ -210,7 +210,7 @@ legstr={}
 % for o=1:nrsets
 %    legstr{o}=strcat("set"," ",num2str(o)); 
 % end
-f=figure('Position',[10,10,2400,1200]);
+f=figure('Position',[10,10,1200,600]);
 q=1;
 for k=2:2:nrsets
     clear h;

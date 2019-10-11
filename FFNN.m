@@ -15,7 +15,7 @@ btrue_nom=normalize(Btrue,'zscore');
 fr_train=0.7;
 fr_val=1-fr_train;
 [X_train,X_val,Y_train,Y_val]=splitData([atrue_nom,btrue_nom],Cm,fr_train,fr_val,1);
-
+X_nom=[atrue_nom,btrue_nom]';
 
 % X=[atrue,Btrue];
 % X=[atruenom, btruenom];%]; %input vector 
@@ -126,7 +126,7 @@ FFNNset.LW=randn(size(FFNNset.LW))*0.01;
 FFNNset.IW{1,1}=randn(size(FFNNset.IW{1,1}));
 FFNNset.b{1,1}=randn(size(FFNNset.b{1,1}))*0.01;
 FFNNset.b{2,1}=randn(size(FFNNset.b{2,1}))*0.05;
-FFNNset.trainParam.min_grad=1e-10;
+FFNNset.trainParam.min_grad=1e-13;
 [FFNNsetmin{it},FFEmin{it},FFEl{it},FFevl{it}]=trainNetwork(FFNNset,Y_train,X_train,X_val,Y_val,0,{'bo','wo','bi','wi'},0);
 end
 save('FFComp','FFNNsetmin','FFEmin','FFEl','FFevl');
@@ -143,7 +143,7 @@ for it=1:5
 RBFNNset=createNNStructure(nrInput,100,nrOutput,inputrange,'rbf',2000,'random');
 RBFNNset.LW=randn(size(RBFNNset.LW))*0.01;
 RBFNNset.IW{1,1}=randn(size(RBFNNset.IW{1,1}));
-RBFNNset.trainParam.min_grad=1e-10;
+RBFNNset.trainParam.min_grad=1e-13;
 [RBFFNNsetmin{it},RBFFEmin{it},RBFFEl{it},RBFFevl{it}]=trainNetwork(RBFNNset,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},0);
 end
 save('RBFComp','RBFFNNsetmin','RBFFEmin','RBFFEl','RBFFevl')
@@ -161,6 +161,8 @@ for k=1:5
    semilogy(ffdat.FFevl{k},ffdat.FFEl{k}./(0.5*neval))
    hold on  
 end
+title("Feedforward Neural Network")
+legend("Run 1","Run 2","Run 3","Run 4","Run 5")
 xlim([0,2000])
 ylim([1e-5,1e-2]);
 grid on
@@ -171,9 +173,90 @@ for k=1:5
    semilogy(rbfdat.RBFFevl{k},rbfdat.RBFFEl{k}./(0.5*neval))
    hold on  
 end
+title("Radial Basis Function Neural Network")
 xlim([0,2000])
 ylim([1e-5,1e-2])
 grid on
+legend("Run 1","Run 2","Run 3","Run 4","Run 5")
 hold off
+
+[~,ffbest]=min(cell2mat(ffdat.FFEmin));
+[~,rbfbest]=min(cell2mat(rbfdat.RBFFEmin));
+
+TRIeval = delaunayn(X_nom');
+
+FFbestset=ffdat.FFNNsetmin{ffbest};
+ffout=calcNNOutput(FFbestset,X_nom);
+
+RBFbestset=rbfdat.RBFFNNsetmin{rbfbest};
+rbfout=calcNNOutput(RBFbestset,X_nom);
+
+poly=load('Data/sumorderpolyfull.mat');
+polyout=poly.Afull*poly.theta_sumorder;
+
+close all 
+figure('Position',[10,10,600,600])
+% subplot(131)
+trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
+hold on
+plot3(atrue.*180/pi,Btrue.*180/pi,ffout.yk,'.k')
+set(gcf,'Renderer','OpenGL');
+view(135,20);
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong 
+pbaspect([1,1,1]);
+title("Feedforward Neural Nework")
+xlabel('alpha [deg]');
+ylabel('beta [deg]');
+zlabel('Cm [-]');
+saveas(gcf,'Report/plots/comparisonff.eps','epsc')
+
+figure('Position',[10,10,600,600])
+% subplot(132)
+trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
+hold on
+plot3(atrue.*180/pi,Btrue.*180/pi,rbfout.yk,'.k')
+set(gcf,'Renderer','OpenGL');
+view(135,20);
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong 
+pbaspect([1,1,1]);
+title("Radial Basis Function Neural Network")
+xlabel('alpha [deg]');
+ylabel('beta [deg]');
+zlabel('Cm [-]');
+saveas(gcf,'Report/plots/comparisonrbf.eps','epsc')
+
+
+figure('Position',[10,10,600,600])
+% subplot(133)
+trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
+hold on
+plot3(atrue.*180/pi,Btrue.*180/pi,polyout,'.k')
+set(gcf,'Renderer','OpenGL');
+view(135,20);
+light('Position',[0.5 .5 15],'Style','local');
+camlight('headlight');
+material([.3 .8 .9 25]);
+shading interp;
+lighting phong 
+pbaspect([1,1,1]);
+title("Polynomial Model")
+xlabel('alpha [deg]');
+ylabel('beta [deg]');
+zlabel('Cm [-]');
+saveas(gcf,'Report/plots/comparisonpoly.eps','epsc')
+
+
+% saveas(gcf,'Report/plots/comparison.eps','epsc');
+
+
+
 
 
