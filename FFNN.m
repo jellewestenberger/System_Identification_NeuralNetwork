@@ -150,13 +150,14 @@ save('RBFComp','RBFFNNsetmin','RBFFEmin','RBFFEl','RBFFevl')
 
 end
 
+
 % plotting 
 ffdat=load('FFComp.mat');
 rbfdat=load('RBFComp.mat');
 
-figure()
+figure('Position',[10,10,1200,300])
 neval=3001; %number of evaluation datapoints. For correcting quadratic error to MSE 
-subplot(211)
+subplot(121)
 for k=1:5
    semilogy(ffdat.FFevl{k},ffdat.FFEl{k}./(0.5*neval))
    hold on  
@@ -167,8 +168,10 @@ xlim([0,2000])
 ylim([1e-5,1e-2]);
 grid on
 hold off
-
-subplot(212)
+xlabel('Evaluations')
+ylabel('MSE [-]')
+% pbaspect([2,1,1])
+subplot(122)
 for k=1:5
    semilogy(rbfdat.RBFFevl{k},rbfdat.RBFFEl{k}./(0.5*neval))
    hold on  
@@ -179,7 +182,11 @@ ylim([1e-5,1e-2])
 grid on
 legend("Run 1","Run 2","Run 3","Run 4","Run 5")
 hold off
+xlabel('Evaluations')
+ylabel('MSE [-]')
+% pbaspect([2,1,1])
 
+saveas(gcf,'Report/plots/convcomp.eps','epsc')
 [~,ffbest]=min(cell2mat(ffdat.FFEmin));
 [~,rbfbest]=min(cell2mat(rbfdat.RBFFEmin));
 
@@ -195,11 +202,16 @@ poly=load('Data/sumorderpolyfull.mat');
 polyout=poly.Afull*poly.theta_sumorder;
 
 close all 
-figure('Position',[10,10,600,600])
+
+MSEff=sum((ffout.yk'-Cm).^2)./size(Cm,1);
+MSErbf=sum((rbfout.yk'-Cm).^2)./size(Cm,1);
+MSEpoly=sum((polyout-Cm).^2)/size(Cm,1);
+figure('Position',[10,10,400,400])
 % subplot(131)
 trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
 hold on
 plot3(atrue.*180/pi,Btrue.*180/pi,ffout.yk,'.k')
+text(10,0,-0.12,strcat('MSE: ',num2str(MSEff)))
 set(gcf,'Renderer','OpenGL');
 view(135,20);
 light('Position',[0.5 .5 15],'Style','local');
@@ -212,13 +224,15 @@ title("Feedforward Neural Nework")
 xlabel('alpha [deg]');
 ylabel('beta [deg]');
 zlabel('Cm [-]');
+legend({'Dataset','Output Model'},'Position',[0.2,-0.2,1,1])
 saveas(gcf,'Report/plots/comparisonff.eps','epsc')
 
-figure('Position',[10,10,600,600])
+figure('Position',[10,10,400,400])
 % subplot(132)
 trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
 hold on
 plot3(atrue.*180/pi,Btrue.*180/pi,rbfout.yk,'.k')
+text(10,0,-0.12,strcat('MSE: ',num2str(MSErbf)))
 set(gcf,'Renderer','OpenGL');
 view(135,20);
 light('Position',[0.5 .5 15],'Style','local');
@@ -231,14 +245,16 @@ title("Radial Basis Function Neural Network")
 xlabel('alpha [deg]');
 ylabel('beta [deg]');
 zlabel('Cm [-]');
+legend({'Dataset','Output Model'},'Position',[0.2,-0.2,1,1])
 saveas(gcf,'Report/plots/comparisonrbf.eps','epsc')
 
 
-figure('Position',[10,10,600,600])
+figure('Position',[10,10,400,400])
 % subplot(133)
 trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
 hold on
 plot3(atrue.*180/pi,Btrue.*180/pi,polyout,'.k')
+text(10,0,-0.12,strcat('MSE: ',num2str(MSEpoly)))
 set(gcf,'Renderer','OpenGL');
 view(135,20);
 light('Position',[0.5 .5 15],'Style','local');
@@ -251,6 +267,7 @@ title("Polynomial Model")
 xlabel('alpha [deg]');
 ylabel('beta [deg]');
 zlabel('Cm [-]');
+legend({'Dataset','Output Model'},'Position',[0.2,-0.2,1,1])
 saveas(gcf,'Report/plots/comparisonpoly.eps','epsc')
 
 

@@ -48,7 +48,7 @@ figure('Position',[100,10,1000,700])
 %% Linear regression 
 
 n=103;
-search=1
+search=1 %search for best performing number of neurons
 E_old=inf;
 E=inf-1;
 result=0;
@@ -88,14 +88,14 @@ clf
 subplot(121)
 trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
 hold on
-plot3(X_val(1,:),X_val(2,:),result.yk,'.')
+plot3(X_val(1,:),X_val(2,:),result.yk,'.k')
 xlabel('\alpha normalized')
 ylabel('\beta normalized')
 zlabel('C_m [-]')
-legend('C_m data','NN validation output','location','best','interpreter','latex')
+legend({'Dataset','Output Model'},'Position',[-0.1,-0.1,1,1])
 pbaspect([1,1,1])
 view(135,20)
-title(strcat(num2str(size(NNset_lin.LW,2))," Neurons, MSE: ",num2str(E)),'interpreter','latex');
+title(strcat(num2str(size(NNset_lin.LW,2))," Neurons, MSE: ",num2str(E)));
 set(gcf,'Renderer','OpenGL');
 hold on;
 light('Position',[0.5 .5 15],'Style','local');
@@ -107,7 +107,7 @@ drawnow();
 
 subplot(122)
 trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',(Y_val-result.yk').^2,'edgecolor','none')
-title('Quadratic Residual','interpreter','latex')
+title('Quadratic Residual')
 pbaspect([1,1,1])
 view(135,20)
 
@@ -130,7 +130,41 @@ NNset.trainParam.min_grad=1e-20;
 % [~, ~,E3,evl3]=trainNetwork(NNset,Y_train,X,1,{'wo','c','a','wi'},1);
 
 
+%% Compare order
+if 0
+NNset=createNNStructure(nrInput,50,nrOutput,inputrange,Networktype,1000,'random');
+NNset.trainalg='trainlm';
+NNset.trainParam.mu=100;
+NNset.trainParam.mu_inc=10;
+NNset.trainParam.mu_dec=0.1;
+NNset.trainParam.min_grad=1e-50; 
+% Cm_norm=normalize(Cm,'zscore');
+neval=size(X_val,2);
+[~, ~,E1,evl1]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,0,{'wi','a','c','wo'},0);
+[~, ~,E2,evl2]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},0);
+[~, ~,E3,evl3]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,0,{'wo','c','a','wi'},1);
+%
+E1=E1./(0.5*neval); %change error from sum(0.5*e^2) to MSE; 1/n*sum(e^2)
+E2=E2./(0.5*neval);
+E3=E3./(0.5*neval);
 %%
+figure('Position',[10,10,600,300])
+semilogy(evl1,E1)
+hold on 
+semilogy(evl2,E2)
+hold on
+semilogy(evl3,E3)
+hold off 
+grid on 
+title('Training order comparison')
+legend('wi-a-c-wo','wo-c-a-wi','optimize order','interpreter','latex')
+xlabel('Evaluation')
+ylabel('MSE [-]')
+xlim([0,1000])
+saveas(gcf,'Report/plots/ordercomp.eps','epsc')
+end
+%% Search optimal number of neurons
+if 0
 counter=0;
 window=15;
 El=[];
@@ -168,7 +202,8 @@ while search
     end
 end
         
-save('findoptimumfixeval660to.mat','El','El_mean')     
+save('findoptimumfixeval660to.mat','El','El_mean')
+end
 %% Train optimal number of neurons extensively 
 Emin=inf;
 El=[];

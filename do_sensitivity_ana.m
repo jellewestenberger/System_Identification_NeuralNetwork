@@ -206,11 +206,11 @@ colors{6}=[176,6,255]/255; %purple
 colors{7}=[0,0,0]/255; %black 
 colors{8}=[2,246,255]/255; %light blue 
 colors{9}=[16,147,6]/255; %dark green   
-legstr={}
+legstr={};
 % for o=1:nrsets
 %    legstr{o}=strcat("set"," ",num2str(o)); 
 % end
-f=figure('Position',[10,10,1200,600]);
+f=figure('Position',[10,10,1500,750]);
 q=1;
 for k=2:2:nrsets
     clear h;

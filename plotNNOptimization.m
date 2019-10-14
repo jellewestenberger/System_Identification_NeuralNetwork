@@ -293,7 +293,7 @@ nsel=Elmeanc(j,1);
     
     
  
-    figure('Position',[10,10,1200,400])
+    figure('Position',[10,10,900,300])
     plot(Elc(:,1),Elc(:,2),'.');
     hold on 
     plot(Elmeanc(:,1),Elmeanc(:,2));
@@ -304,7 +304,7 @@ nsel=Elmeanc(j,1);
     hold on
     plot(Elmeanc(j,1),Elmeanc(j,2),'.g','MarkerSize',20);
     text(1.05*nsel,0.8*minE,strcat(num2str(nsel)," neurons:"));
-    text(1.05*nsel,0.6*minE,strcat("Min MSE:",num2str(minE)));
+    text(1.05*nsel,0.6*minE,strcat("Min MSE:",num2str(minE,'%1.4u')));
     grid on
     xlabel('neurons');
     ylabel('MSE [-]')
