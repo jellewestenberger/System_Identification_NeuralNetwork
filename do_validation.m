@@ -1,4 +1,4 @@
-function do_validation(type,order,X_train,Y_train,X_val,Y_val,plotf,typenames)
+function do_validation(type,order,X_train,Y_train,X_val,Y_val,plotf,savef,typenames)
 global atrue Btrue Cm
 
 %% Model-error based validation 
@@ -31,19 +31,6 @@ elseif strcmp(type,'allorder')
 end
 
 if plotf
-%     
-% TRIeval = delaunayn([atrue Btrue]);   
-% TRIeval2 = delaunayn(X_val);
-% figure
-% subplot(121)
-% plot3(X_val(:,1),X_val(:,2),estimatedCm_val, '.k');
-% hold on
-% trisurf(TRIeval,atrue,Btrue,Cm,'EdgeColor','None');
-% legend(typename,'Full dataset')
-% grid on 
-% subplot(122)
-% trisurf(TRIeval2,X_val(:,1),X_val(:,2),res_val,'EdgeColor','None');
-
 
 figure
 plot(res_val);
@@ -57,8 +44,9 @@ xlabel('Sample');
 
 pbaspect([2.5,1,1])
 legend('Model Residual',strcat('Mean residual =',num2str(mean(res_val))))
+if savef
 saveas(gcf,strcat('Report/plots/',type,'_resmean.eps'),'epsc');
-
+end
 figure
 plot(lags,err_autoCorr);
 hold on
@@ -74,7 +62,9 @@ xlabel('lags [#samples]')
 ylabel('Auto-correlation [-]')
 legend('Auto-Correlation','95% confidence interval')
 title(typename,'interpreter','latex');
+if savef
 saveas(gcf,strcat('Report/plots/',type,'_rescorr.eps'),'epsc');
+end
 end
 
 
@@ -91,6 +81,7 @@ theta_var2=diag(theta_cov2);
 
 
 fontsize=5;
+if plotf
 figure;
 subplot(121)
 f=bar(theta_train,'Edgecolor','None');
@@ -128,9 +119,11 @@ Yrule.FontSize=fontsize;
 Xrule.FontSize=fontsize;
 xlim([1,size(theta_train,1)+1]);
 pbaspect([2.5 1 1])
+if savef
 saveas(gcf,strcat('Report/plots/',type,'estimator_vars.eps'),'epsc')
+end
 
-figure
-
+% figure
+end
 
 end

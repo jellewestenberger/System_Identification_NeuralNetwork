@@ -27,7 +27,7 @@ elseif strcmp(type,'allorder')
     end
     A=x2fx(X,exps);
 
-d=2;
+
 elseif strcmp(type,'sumorder')
     exps=zeros(1,nrvars);
     for k=1:order

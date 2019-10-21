@@ -1,24 +1,14 @@
 clear all
 close all
 load_f16data2018
-%% Test to see what happens if you reverse the measurements
-% alpha_m=alpha_m(end:-1:1);
-% Au=Au(end:-1:1);
-% Aw=Aw(end:-1:1);
-% beta_m=beta_m(end:-1:1);
-% Cm=Cm(end:-1:1);
-% 
-% Vtot=Vtot(end:-1:1);
-% Z_k=Z_k(end:-1:1,:);
-% U_k=U_k(end:-1:1,:)*-1;
 
 
-
-plotflag='y';
+plotf=1; %enable/disable plotting
+savef=0; %enable/disable saving results and plots 
 %% --------EXTENDED KALMAN FILTER-------
 epsilon=1e-10;
 maxIterations=100;
-doIEKF=1;
+doIEKF=1; % iterated extended kalman filter instead of extended only
 dt=0.01;
 N=size(U_k,1); % #measurements
 D_x=U_k'; 
@@ -51,7 +41,7 @@ B=eye(m);  %input matrix
 XX_k1k1=zeros(m,N); %array for optimal predicted states 
 z_pred=zeros(n,N);
 
-%run extended kalman filters
+%run extended kalman filter
 disp('running kalman filter on measurements');
 ti=0;
 tf=dt;
@@ -121,7 +111,6 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
 
    else
     
-    %if not IEKF
     %pertubation of measurements
     Hx=calc_Jacob_out(x_kk_1);
   
@@ -143,10 +132,8 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
 end
 
 
-%     
-% atrue=(z_pred(1,:)-v_k(1,:))./(1+XX_k1k1(4,e));  
-% Btrue=(z_pred(2,:)-v_k(2,:));
-% Vtrue=(z_pred(3,:)-v_k(3,:));
+%%   
+
 atrue=(z_pred(1,:))./(1+XX_k1k1(4,end));  
 atrue2=atan(XX_k1k1(3,:)./XX_k1k1(1,:));
 figure
@@ -158,114 +145,103 @@ legend('from upwash','from accelerometer')
 grid()
 
 
-% figure
-% plot(atrue)
-% hold on
-% plot(atrue2)
 
+%% Plotting
 Btrue=(z_pred(2,:));
 Vtrue=(z_pred(3,:));
-%NOT SURE IF NEED TO BE REMOVED FROM TRUE MEASUREMENTS OR PREDICTED
-%MEASUREMENTS 
-% atrue=(alpha_m'-v_k(1,:))./(1+XX_k1k1(4,:));
-% Btrue=(beta_m'-v_k(2,:));
-% Vtrue=(Vtot'-v_k(3,:));
-% 
 
 T=[0:dt:(10000*dt)];
 
-if plotflag == 'y'
-figure()
-% subplot(211)
+if plotf
+    figure()
+    % subplot(211)
 
-plot(T,z_pred(1,:));
-hold on
-plot(T,alpha_m);
-hold on
-plot(T,atrue);
-hold on
-plot(T,XX_k1k1(4,:));
-pbaspect([2 1 1])
-title('alpha');
-grid()
-l=legend('Approximated alpha','Measured alpha','reconstructed true alpha', 'estimated upwash coeficient', 'Location','northwest');
-l.FontSize=8;
-xlabel('time [s]')
-ylabel('angle of attack [rad]')
-saveas(gcf,'Report/plots/alpharecon.eps','epsc')
-% subplot(212)
-% plot(T,(z_pred(1,:)'-alpha_m))
-% grid()
+    plot(T,z_pred(1,:));
+    hold on
+    plot(T,alpha_m);
+    hold on
+    plot(T,atrue);
+    hold on
+    plot(T,XX_k1k1(4,:));
+    pbaspect([2 1 1])
+    title('alpha');
+    grid()
+    l=legend('Approximated alpha','Measured alpha','reconstructed true alpha', 'estimated upwash coeficient', 'Location','northwest');
+    l.FontSize=8;
+    xlabel('time [s]')
+    ylabel('angle of attack [rad]')
+    if savef
+    saveas(gcf,'Report/plots/alpharecon.eps','epsc')
+    end
+  
 
-figure
-plot(T,z_pred(2,:));
-hold on
-plot(T,beta_m);
-% hold on
-% plot(T,Btrue);
-title('beta');
-legend('predicted output','measured output','estimated true beta');
-xlabel('time [s]')
-ylabel('sideslip angle [rad]')
+    figure
+    plot(T,z_pred(2,:));
+    hold on
+    plot(T,beta_m);
+    title('beta');
+    legend('predicted output','measured output','estimated true beta');
+    xlabel('time [s]')
+    ylabel('sideslip angle [rad]')
 
 
-figure
-plot(T,z_pred(3,:));
-hold on
-plot(T,Vtot);
-plot(T,Vtrue);
-title('V')
-legend('predicted output','measured output','estimated true V');
-xlabel('time [s]')
-ylabel('velocity [m/s]')
+    figure
+    plot(T,z_pred(3,:));
+    hold on
+    plot(T,Vtot);
+    plot(T,Vtrue);
+    title('V')
+    legend('predicted output','measured output','estimated true V');
+    xlabel('time [s]')
+    ylabel('velocity [m/s]')
 
-figure
-plot(T,(z_pred(1,:)'-alpha_m(:)));
+    figure
+    plot(T,(z_pred(1,:)'-alpha_m(:)));
 
-TRIeval = delaunayn([atrue' Btrue']);
+    TRIeval = delaunayn([atrue' Btrue']);
 
-figure
-plot3(atrue',Btrue',Cm,'.k');
-xlabel('alpha')
-ylabel('beta');
-hold on
-plot3(alpha_m',beta_m',Cm,'.b');
-grid();
-% hold on
-% trisurf(TRIeval,atrue',Btrue',Cm,'EdgeColor','None');
-figure
-subplot(221)
+    figure
+    plot3(atrue',Btrue',Cm,'.k');
+    xlabel('alpha')
+    ylabel('beta');
+    hold on
+    plot3(alpha_m',beta_m',Cm,'.b');
+    grid();
+    figure
+    subplot(221)
 
-plot(T(2:end),state_est_err(1,:))
-title('u')
-subplot(222)
-plot(T(2:end),state_est_err(2,:))
-title('v')
-subplot(223)
-plot(T(2:end),state_est_err(3,:))
-title('w')
-subplot(224)
-plot(T(2:end),state_est_err(4,:))
-title('Ca')
+    plot(T(2:end),state_est_err(1,:))
+    title('u')
+    subplot(222)
+    plot(T(2:end),state_est_err(2,:))
+    title('v')
+    subplot(223)
+    plot(T(2:end),state_est_err(3,:))
+    title('w')
+    subplot(224)
+    plot(T(2:end),state_est_err(4,:))
+    title('Ca')
 
-figure()
-plot(T,XX_k1k1(4,:))
-grid()
-xlabel('Time [s]')
-ylabel('C_{\alpha_{up}}[-]')
-title('Estimated Upwash coefficient')
-pbaspect([4 1 1])
-ylim([min(XX_k1k1(4,:)) max(XX_k1k1(4,:))*1.1])
-saveas(gcf,'Report/plots/caup.eps','epsc')
-
+    figure()
+    plot(T,XX_k1k1(4,:))
+    grid()
+    xlabel('Time [s]')
+    ylabel('C_{\alpha_{up}}[-]')
+    title('Estimated Upwash coefficient')
+    pbaspect([4 1 1])
+    ylim([min(XX_k1k1(4,:)) max(XX_k1k1(4,:))*1.1])
+    if savef
+    saveas(gcf,'Report/plots/caup.eps','epsc')
+    end
 end
 
 atrue=atrue';
 Btrue=Btrue';
 Vtrue=Vtrue';
 
-
-save('atrue.mat','atrue');
-save('Btrue.mat','Btrue');
-save('Vtrue.mat','Vtrue');
-save('T.mat','T');
+if savef
+save('Data/atrue.mat','atrue');
+save('Data/Btrue.mat','Btrue');
+save('Data/Vtrue.mat','Vtrue');
+save('Data/T.mat','T');
+end

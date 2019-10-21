@@ -13,5 +13,5 @@ vv=V(3);
 a_true=atan2(w,u);
 b_true=atan2(v,(sqrt(u.^2+w.^2)));
 V_true=sqrt(u.^2+v.^2+w.^2);
-mat=[a_true*(1+Ca)+va; b_true+vb; V_true+vv];%Check if fraction is done correctly (elementwise or not) 
+mat=[a_true*(1+Ca)+va; b_true+vb; V_true+vv];
 end

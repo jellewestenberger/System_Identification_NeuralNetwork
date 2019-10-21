@@ -1,11 +1,7 @@
 function [NNsetmin, minerror,El,evl]=trainNetwork(NNset,Y_train,X_train,X_val,Y_val,plotf,selector,optimizeorder)
-% close all
-% atrue=X(1,:);
-% Btrue=X(2,:);
-% Vtrue=X(3,:);
+
 global eval 
 eval=0;
-% plotf=1;
 
 eta=0.0000001;
 disp('Number of Neurons:');
@@ -24,16 +20,13 @@ for i=1:size(selector,2)
     if strcmp(selector(i),'wi')||strcmp(selector{i},'c')
         mu{i}=mat2cell(ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu,[1,1]);
         E{i}=mat2cell(ones(size(NNset.IW{1},2),1)*inf,[1,1]);
-%         dE{i}=mat2cell(zeros(size(NNset.IW{1},2),1),[1,1]);
     else
         mu{i}={NNset.trainParam.mu};
         E{i}={inf};
-%         dE{i}={0};
+
     end    
     
 end
- %log performance per parameter
-% mu=ones(size(E))*NNset.trainParam.mu;
 
 mu_inc=NNset.trainParam.mu_inc;
 mu_dec=NNset.trainParam.mu_dec;
@@ -43,7 +36,6 @@ output=calcNNOutput(NNset,X_train);
 output_val=calcNNOutput(NNset,X_val); 
 ekq=Y_train'-output.yk;
 ekq_val=Y_val'-output_val.yk;
-init=1;%set this to a larger value if  you want to keep updating each weight until the error is smaller before going to the next weight.
 El=[sum(0.5*ekq_val.^2)];
 Ek_val_old=1e9;
 El2=[];
@@ -53,13 +45,9 @@ evl=[eval];
 cycle=1;
 evaltot=NNset.trainParam.epochs;
 dE=ones(size(selector))*-1e-9;
-while eval<evaltot
-    %     disp(num2str(cycle));
-    % disp(E(eval_par(end))) %display newest error 
+while eval<evaltot 
     cyclel=[cyclel, cycle];   
-
     NNset_old=NNset;
-    %         output=calcNNOutput(NNset,X);
     ekq=Y_train'-output.yk;
 
     Ek=sum(0.5*ekq.^2);
@@ -89,7 +77,7 @@ while eval<evaltot
                     elseif strcmp(trainalg,'traingd')
                         d=mu{1}{j}*J;
                     end
-%                     fprintf("d:%f, mu:%f\n",sum(d),mu{1}{j});
+
                     NNset.LW(1,:)=NNset.LW(1,:)-d';
                     Curpar=NNset.LW(1,:);
                 elseif strcmp(selector{1},'a')
@@ -134,7 +122,7 @@ while eval<evaltot
                 ekq_val=Y_val'-output_val.yk;
                 Ek_val=sum(0.5*ekq_val.^2); 
                 El2=[El2;Ek_val];
-%                 fprintf("Ek_val: %d, Ek_val_old: %d\n",Ek_val,Ek_val_old);
+
                
                 if (Ek_val>Ek_val_old)
                     if m<5
@@ -220,11 +208,8 @@ while eval<evaltot
         fprintf("Total evaluations exceeded max allowed evaluations. Training Stopped\n");
     end
 
-% disp(minerror)    
-end
 
-% disp('min error:')
-% disp(minerror)
+end
 
 
 
@@ -237,120 +222,55 @@ end
 % Partial derivatives: Note that some partial derivatives have already been
 % calculated in calcNNOuput and are stored in outputs
 function dEdWjk=outputWeight(outputs,ekq)
-%         ekq=Cm'-outputs.yk;
-%         E(1)=sum(0.5*ekq.^2);
-%         E_old(1)=E(1);
-                           
+                          
         dEdWjk=outputs.yi{1,2}*ekq'*(-1);
-%         J=dEdWjk;
-%         if strcmp(NNset.trainalg,'trainlm')
-%         d=LM(J,E(1),mu{1});
-%          elseif strcmp(NNset.trainalg,'trainbp')
-%            d=mu{1}*J; 
-%            d=d';
-%         end
-%         NNset.LW=NNset.LW-d;
+
 end
 
 function dEdWij=radbasInputWeight(outputs,ekq,v)
-%     ekq=Cm'-outputs.yk;
-%     E(1)=sum(0.5*ekq.^2);
-%     E_old(1)=E(1);
-    dPhijdVj=outputs.dphidvj{1};%-NNset.a{1}.*exp(-outputs.vj{1});
+
+    dPhijdVj=outputs.dphidvj{1};
     dVjdWij=outputs.dvjdwij;
-%     d=[];
+
     dEdWij=dVjdWij{1,v}.*dPhijdVj*ekq'*(-1).*NNset.LW';
-%     d=LM(dEdWij,E(1),mu{1}(v));
-%     for i=1:size(dVjdWij,2)% loop over input weights belonging to alpha, beta (and V)
-%         dEdWij=dVjdWij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
-%         if strcmp(NNset.trainalg,'trainlm')
-%         d=[d;LM(dEdWij,E(1),mu{1}(i))]; %first column for alpha, second for beta
-%              
-%         end
-%     end
-%     d=d';
-%     NNset.IW{1}(:,v)=NNset.IW{1}(:,v)-d;    
+
 end
 
-function dEdWij=tansigInputWeight(outputs,ekq,v)
-%     ekq=Cm'-outputs.yk;
-%     E(1)=sum(0.5*ekq.^2);
-%     E_old(1)=E(1);
-    dPhijdVj=outputs.dphidvj{1};%(4*exp(-2*outputs.vj{1}))./((1+exp(-2*outputs.vj{1})).^2);
-    dVjdWij=outputs.dvjdwij;%yi{1};
-    dEdWij=dVjdWij{1,v}.*dPhijdVj.*ekq*(-1).*NNset.LW';
-    dEdWij=sum(dEdWij,2);
-%     d=[];
-%     d=LM(dEdWij,E(1),mu{1}(v));
-%     for i=1:size(dVjdWij,1)
-%        dEdWij=sum(dPhijdVj.*dVjdWij(i,:).*ekq*(-1).*NNset.LW',2); 
-%        if strcmp(NNset.trainalg,'trainlm')
-%        d=[d;LM(dEdWij,E(1),mu{1})];
-%        elseif strcmp(NNset.trainalg,'trainbp')
-%            d=[d;(mu{1}*dEdWij)'];
-%        end
-%     end
-%     d=d';
-%     NNset.IW{1}(:,v)=NNset.IW{1}(:,v)-d;  
-end
+    function dEdWij=tansigInputWeight(outputs,ekq,v)
 
-function dEda=radbasAmplitude(outputs,ekq)
-%     ekq=Cm'-outputs.yk;
-%     E(1)=sum(0.5*ekq.^2);
-%     E_old(1)=E(1);
+        dPhijdVj=outputs.dphidvj{1};
+        dVjdWij=outputs.dvjdwij;
+        dEdWij=dVjdWij{1,v}.*dPhijdVj.*ekq*(-1).*NNset.LW';
+        dEdWij=sum(dEdWij,2);
 
-    dEda=(-1)*exp(-outputs.vj{1})*ekq'.*NNset.LW';
-%     if strcmp(NNset.trainalg,'trainlm')
-%     d=LM(dEda,E(1),mu{1});
-%     end
-%     NNset.a{1}=NNset.a{1}-d';
-end
+    end
 
-function dEdCij=radbasCenter(outputs,ekq,i)
-%     ekq=Cm'-outputs.yk;
-%     E(1)=sum(0.5*ekq.^2);
-%     E_old(1)=E(1);
+    function dEda=radbasAmplitude(outputs,ekq)
 
+        dEda=(-1)*exp(-outputs.vj{1})*ekq'.*NNset.LW';
 
-    dPhijdVj=-NNset.a{1}.*exp(-outputs.vj{1});
-    dVjdCij=outputs.dvjcij;
+    end
 
-    d=[];
+    function dEdCij=radbasCenter(outputs,ekq,i)
 
-%     for i=1:size(dVjdCij,2)
+        dPhijdVj=-NNset.a{1}.*exp(-outputs.vj{1});
+        dVjdCij=outputs.dvjcij;
         dEdCij=dVjdCij{1,i}.*dPhijdVj*ekq'*(-1).*NNset.LW';
-%         if strcmp(NNset.trainalg,'trainlm')
-%         d=[d;LM(dEdCij,E(1),mu{1})];
-%         end
-%     end
-%     d=d';
-%     NNset.centers{1}=NNset.centers{1}-d;       
-end
+
+    end
 
     function dEdbi= inputBias(outputs,ekq)
-              
-%     ekq=Cm'-outputs.yk;
-%     E(1)=sum(0.5*ekq.^2);
-%     E_old(1)=E(1);
+
+
     dEdyj=(-1)*ekq.*NNset.LW';
     dEdbi=sum(dEdyj.*outputs.dphidvj{1},2);
-%         if strcmp(NNset.trainalg,'trainlm')
-%         d=LM(dEdbi,E(1),mu{1});
-%         end
-%         NNset.b{1}=NNset.b{1}-d';
+
     end
     function dEdbo=outputBias(ekq)
-         
-%     ekq=Cm'-outputs.yk;
-%     E(1)=sum(0.5*ekq.^2);
-%     E_old(1)=E(1);
-    dEdbo=sum((-1)*ekq);
-%     if strcmp(NNset.trainalg,'trainlm')
-%         d=LM(dEdbo,E(1),mu{1});
-%     end
-%     NNset.b{end}=NNset.b{end}-d;
+        dEdbo=sum((-1)*ekq);
+
     end
-    
+
 
     function plotfig(output,scroll)
           
@@ -360,14 +280,10 @@ end
             end
             clf(2)
             if size(X_train,1)==2
-    %             set(gcf, 'WindowState','fullscreen')            
+       
                 subplot(221)                        
                 trisurf(TRIeval,X_train(1,:)',X_train(2,:)',Y_train,'edgecolor','none');
-%                 sp.XDataSource="X(1,:)'";
-%                 sp.YDataSource="X(2,:)'";
-%                 sp.ZDataSource="Cm";
-%                 hold on
-%                 plot3(X(1,:)',X(2,:)',Cm,'.b');
+
                 hold on
                 if accept
                     plot3(X_val(1,:),X_val(2,:),output_val.yk,'.g');
@@ -387,8 +303,6 @@ end
                 subplot(223)    
                 QE=0.5*(output_val.yk-Y_val').^2;
                 trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',QE,'edgecolor','none')
-%                 plot3(X(1,:),X(2,:),QE,'.')
-                
                 xlabel('alpha')
                 ylabel('beta')
                 title('quadratic error')
@@ -432,17 +346,6 @@ end
                 grid on
                
                 
-%                  subplot(224)
-%                  if accept
-%                     plot(Curpar,'.g')
-%                  else
-%                       plot(Curpar,'.b')
-%                  end
-%                  xlim([1,size(NNset.IW{1},1)]);
-%                 title(selector{1})
-%                 xlabel('Neuron')
-%                 ylabel('Gain')
-%                 grid on;
             else
 
             plot(output.yk)
@@ -451,12 +354,11 @@ end
             plot(Y_val)
             
             end
-    %         legend('Approximation','True');
+
             
           
             refreshdata
             drawnow
-    %         pause
 
         end
     end
