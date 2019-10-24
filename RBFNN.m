@@ -2,10 +2,10 @@ clear all
 close all
 %% Settings
 fprintf("Don't forget to set which parts of the report must be performed\n at the beginning of RBFNN.m\n");
-do_lin_regress=1;           % perform linear regression (section 3.1.1)
+do_lin_regress=0;           % perform linear regression (section 3.1.1)
 do_compare_par_order=0;     % compare different order of parameter training (section 3.2.2) 
 do_optimize_neuron=0;       % find optimal number of neurons (section 3.3)
-do_train_optimal=0;         % train optimal network more extensively
+do_train_optimal=1;         % train optimal network more extensively
 
 plotf=1; %plot final results
 plottraining=0; % plot during training. note that disabling plotting in trainNetwork.m speeds up training significantly 

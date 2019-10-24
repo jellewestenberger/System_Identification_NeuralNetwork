@@ -18,8 +18,8 @@ mu={};
 stopcount=0;
 for i=1:size(selector,2) 
     if strcmp(selector(i),'wi')||strcmp(selector{i},'c')
-        mu{i}=mat2cell(ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu,[1,1]);
-        E{i}=mat2cell(ones(size(NNset.IW{1},2),1)*inf,[1,1]);
+        mu{i}=mat2cell(ones(size(NNset.IW{1},2),1)*NNset.trainParam.mu,ones(1,size(X_train,1)));
+        E{i}=mat2cell(ones(size(NNset.IW{1},2),1)*inf,ones(1,size(X_train,1)));
     else
         mu{i}={NNset.trainParam.mu};
         E{i}={inf};
