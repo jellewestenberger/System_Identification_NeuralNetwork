@@ -4,7 +4,7 @@
 clear all
 close all
 u=linspace(0,20,500)';
-v=linspace(0,33,500)';fprintf
+v=linspace(0,33,500)';
 w=linspace(0,50,500)';
 y=sin(u)+5*cos(3*v)+sin(w-0.5*pi);
 
@@ -31,7 +31,7 @@ mu_dec=0.1;
 
 % trainNetwork(NNset,Y_train,X_train,X_val,Y_val,plotf,selector,optimizeorder)
 
-[NNsetmin, minerror,El,evl]=trainNetwork(network,y,X,X,y,0,{'a','c','wo','wi'},0);
+[NNsetmin, minerror,El,evl]=trainNetwork(network,y,X,X,y,1,{'a','c','wo','wi'},0);
 calc
 
 

@@ -28,4 +28,4 @@ function r = kf_calcObsRank(H, Fx)
     end
     Rank = [ Rank; H*F ];
     r    = rank(Rank);
-
+end

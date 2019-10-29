@@ -1,24 +1,22 @@
+% this file plots the results of the number of neurons optimization 
+% 
+
 clear all 
 close all
-a=0;
-b=0;
-c=0;
-d=1;
-neval=3001;
-%%
-if a
-a1=load('nnglobalsessionupto565.mat');
-a2=load('nnglobalsession565to645.mat');
+savefl=0;
 
-a3=load('nnglobalsession645845.mat');
-a4=load('nnglobalsession865andup.mat');
-a5=load('nnglobalsession1000.mat');
-% a6=load('nnglobalsession2000.mat');
-% a7=load('nnglobalsession1500.mat');
-% a8=load('nnglobalsession12501750.mat
+neval=3001;
+%% RBF Global performance plot (section 3.3)
+
+a1=load('Data/nnglobalsessionupto565.mat');
+a2=load('Data/nnglobalsession565to645.mat');
+
+a3=load('Data/nnglobalsession645845.mat');
+a4=load('Data/nnglobalsession865andup.mat');
+a5=load('Data/nnglobalsession1000.mat');
+
 El=a1.El;
-El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El;];%a6.El;a7.El;a8.El];
-El(:,2)=2*El(:,2)/neval;
+El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El;];
 Elmean=[];
 
 k=0;
@@ -48,12 +46,14 @@ grid on
 xlabel('Nr neurons')
 ylabel('MSE')
 legend('final MSE single run','Average final MSE');
+if savefl
 saveas(gcf,'Report/plots/nnopti.eps','epsc');
 end
+
 %%
-if b
-b1=load("findoptimumRBFNN.mat");
-b2=load("findoptimumRBFNNupto38.mat");
+
+b1=load("Data/findoptimumRBFNN.mat");
+b2=load("Data/findoptimumRBFNNupto38.mat");
 
 El2=b2.El; 
 El3=b1.El;
@@ -75,7 +75,6 @@ for k=window:size(grad_m,1)
 end
 
 
-
 figure('Position',[10,10,1200,800])
 subplot(211)
 plot(El2(:,1),El2(:,2),'.')
@@ -89,14 +88,14 @@ hold on
 plot(grad(:,1),grad_m);
 grid on 
 legend('Error gradient','Moving Average Error gradient (10 samples)','location','southeast')
-saveas(gcf,'Report/plots/nnopti2.eps','epsc');
-end 
-%%
-if c
-   
 
-c1=load('findoptimumfixevalupto650.mat');
-c2=load('findoptimumfixeval660to.mat'); 
+if savefl
+saveas(gcf,'Report/plots/nnopti2.eps','epsc');
+end
+
+
+c1=load('Data/findoptimumfixevalupto650.mat');
+c2=load('Data/findoptimumfixeval660to.mat'); 
 Elc=[c1.El;c2.El]./[1,0.5*neval];
 Elmeanc=[c1.El_mean;c2.El_mean]./[1,0.5*neval];
 minE=inf; 
@@ -137,16 +136,18 @@ grid on
 xlim([min(Elc(:,1)),max(Elc(:,1))]);
 xlabel("neurons");
 ylabel("MSE [-]");
+if savefl
 saveas(gcf,"Report/plots/findoptinn.eps",'epsc');
 end
 
 
-if 0
-load('NNsetf.mat')
-load('atrue.mat');
-load('Btrue.mat');
-load('Vtrue.mat');
-load('T.mat');
+
+
+load('Data/NNsetf.mat')
+load('Data/atrue.mat');
+load('Data/Btrue.mat');
+load('Data/Vtrue.mat');
+load('Data/T.mat');
 load_f16data2018;
 atrue_nom=normalize(atrue,'zscore');
 btrue_nom=normalize(Btrue,'zscore');   
@@ -211,104 +212,8 @@ title('Quadratic Residual')
 xlabel('\alpha [deg]')
 ylabel('\beta [deg]')
 zlabel('Cm [-]^2')    
+if savefl
 saveas(gcf,'Report/plots/finalrbfnn.eps','epsc')
-    
 end
 
-if 0
-   
-set={}
-nrsets=9; 
-colors{1}=[0,12,255]/255; %blue 
-colors{2}=[66,255,0]/255; %green 
-colors{3}=[255,216,0]/255; %yellow 
-colors{4}=[212,150,0]/255; %orange 
-colors{5}=[255,0,0]/255; %red 
-colors{6}=[176,6,255]/255; %purple 
-colors{7}=[0,0,0]/255; %black 
-colors{8}=[2,246,255]/255; %light blue 
-colors{9}=[16,147,6]/255; %dark green   
-legstr={}
-for o=1:nrsets
-   legstr{o}=strcat("set"," ",num2str(o)); 
-end
-f=figure('Position',[10,10,1200,600]);
-    for k=1:nrsets
-        set{k}=load(strcat("FFset",num2str(k),".mat"));
-%     set1=load("FFset1.mat");
-%     set2=load("FFset2.mat");
-%     set3=load("FFset3.mat");
-%     set4=load("FFset4.mat");
-%     set5=load("FFset5.mat");
-%     set6=load("FFset6.mat");
-%     set7=load("FFset7.mat");
-%     set8=load("FFset8.mat");
-%     set9=load("FFset9.mat");
-%     subplot(floor(sqrt(nrsets)),floor(nrsets/floor(sqrt(nrsets))),k)
-    for j=1:size(set{k}.Eprop,1)
-       hi=semilogy(set{k}.Eprop{j,2},set{k}.Eprop{j,1}./(0.5*3001),'color',colors{k},'LineWidth',1.1);
-      
-       hold on
-    end
-    h(k)=hi(1);
-%     title(strcat("set"," ",num2str(k)));
-    xlabel('evaluations')
-    ylabel('MSE')
-    grid on 
-%     ylim([1e-5,1e-2]);
-
-    end
-    title("MSE Propagation");
-    legend(h,legstr);
-    xlim([0,4010]);
-    
-    saveas(gcf,'Report/plots/erorpropset.eps','epsc')
-end
-
-if 1 %optimum FFNN
-    
-       
-ffopt=load('fffindoptimum.mat'); 
-    Elc=[ffopt.El;ffopt.El]./[1,0.5*neval];
-Elmeanc=[ffopt.El_mean]./[1,0.5*neval]; %correct from squared error sum(0.5()^2) to MSE sum(e^2)/n `
-minE=inf; 
-search=1;
-k=1;
-window=15;
-while search && k<=size(Elmeanc,1)
-    if Elmeanc(k,2)<minE
-        minE=Elmeanc(k,2);
-        j=k;
-    end
-    
-    if (k-j)>=window
-        search=0;
-    end
-    
-    k=k+1; 
-end
-    
-nsel=Elmeanc(j,1);
-    
-    
-    
- 
-    figure('Position',[10,10,900,300])
-    plot(Elc(:,1),Elc(:,2),'.');
-    hold on 
-    plot(Elmeanc(:,1),Elmeanc(:,2));
-    hold on
-    plot(Elmeanc(:,1),Elmeanc(:,2),'.k');
-    hold on 
-    line([nsel,nsel],get(gca,'ylim'))
-    hold on
-    plot(Elmeanc(j,1),Elmeanc(j,2),'.g','MarkerSize',20);
-    text(1.05*nsel,0.8*minE,strcat(num2str(nsel)," neurons:"));
-    text(1.05*nsel,0.6*minE,strcat("Min MSE:",num2str(minE,'%1.4u')));
-    grid on
-    xlabel('neurons');
-    ylabel('MSE [-]')
-    xlim([min(Elc(:,1)),max(Elc(:,1))]);
-    saveas(gcf,'Report/plots/FFNNOptiN.eps','epsc')
-end
 

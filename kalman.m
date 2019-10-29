@@ -132,20 +132,6 @@ P_kk_1=Phi*P_k1k1*Phi'+Gamma*Q*Gamma';
 end
 
 
-%%   
-
-atrue=(z_pred(1,:))./(1+XX_k1k1(4,end));  
-atrue2=atan(XX_k1k1(3,:)./XX_k1k1(1,:));
-figure
-diff=atrue-atrue2;
-plot(atrue)
-hold on 
-plot(atrue2)
-legend('from upwash','from accelerometer')
-grid()
-
-
-
 %% Plotting
 Btrue=(z_pred(2,:));
 Vtrue=(z_pred(3,:));
