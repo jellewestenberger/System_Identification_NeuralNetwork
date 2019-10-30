@@ -2,10 +2,10 @@ clear all
 close all
 %% Settings
 fprintf("Don't forget to set which parts of the report must be performed\n at the beginning of RBFNN.m\n");
-do_lin_regress=0;           % perform linear regression (section 3.1.1)
+do_lin_regress=1;           % perform linear regression (section 3.1.1)
 do_compare_par_order=0;     % compare different order of parameter training (section 3.2.2) 
 do_optimize_neuron=0;       % find optimal number of neurons (section 3.3)
-do_train_optimal=1;         % train optimal network more extensively
+do_train_optimal=0;         % train optimal network more extensively
 
 plotf=1; %plot final results
 plottraining=0; % plot during training. note that disabling plotting in trainNetwork.m speeds up training significantly 
@@ -71,20 +71,20 @@ if do_lin_regress
     result=result_old;
     E=E_old;
     if plotf
-        figure('Position',[100,10,1000,700])
+        figure('Position',[100,10,500,500])
 
         TRIeval = delaunayn(X(1:2,:)',{'Qt','Qbb','Qc'});
         TRIeval_val=delaunayn(X_val(1:2,:)',{'Qt','Qbb','Qc'});
 
         clf
-        subplot(121)
+        
         trisurf(TRIeval,X(1,:)',X(2,:)',Cm,'edgecolor','none');
         hold on
         plot3(X_val(1,:),X_val(2,:),result.yk,'.k')
         xlabel('\alpha normalized')
         ylabel('\beta normalized')
         zlabel('C_m [-]')
-        legend({'Dataset','Output Model'},'Position',[-0.1,-0.1,1,1])
+        legend({'Dataset','Output Model'},'Position',[0.15,-0.2,1,1])
         pbaspect([1,1,1])
         view(135,20)
         title(strcat(num2str(size(NNset_lin.LW,2))," Neurons, MSE: ",num2str(E)));
@@ -96,18 +96,20 @@ if do_lin_regress
         shading interp;
         lighting phong;
         drawnow();
-
-        subplot(122)
+        if savef
+             saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.eps'),'epsc')
+        end
+        figure('Position',[100,10,500,500])
         trisurf(TRIeval_val,X_val(1,:)',X_val(2,:)',(Y_val-result.yk').^2,'edgecolor','none')
         title('Quadratic Residual')
         pbaspect([1,1,1])
         view(135,20)
+         xlabel('\alpha normalized')
+        ylabel('\beta normalized')
 
         if savef
-            saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.eps'),'epsc')
-            saveas(gcf,strcat('Report/plots/linearNN',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.jpg'))
+             saveas(gcf,strcat('Report/plots/linearNNResi',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.eps'),'epsc')        end
         end
-    end
 end
 %% Levenberg Marquard
 NNset=createNNStructure(nrInput,580,nrOutput,inputrange,Networktype,1000,'random');
