@@ -22,7 +22,7 @@ function r = kf_calcObsRank(H, Fx)
 
     F = eye(size(Fx));
     Rank = [];
-    for i = 1:nstates-1,
+    for i = 1:nstates-1
        Rank = [ Rank; H*F ];
        F = F*Fx;
     end

@@ -1,6 +1,6 @@
 do_kalman=0;
 do_parameter_estimation=0;
-do_radial_basis_NN=0;
+do_radial_basis_NN=1;
 do_feedforward_NN=0;
 
 

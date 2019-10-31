@@ -1,5 +1,6 @@
 function write2table(thetas,orders,errors)
-
+% This function was created to write results to a files so that it could
+% automatically be imported in the report
 replaceLine = 1;
 numLines = 5;
 newText = 'This file originally contained a magic square';

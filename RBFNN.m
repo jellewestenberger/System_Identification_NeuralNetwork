@@ -2,7 +2,7 @@ clear all
 close all
 %% Settings
 fprintf("Don't forget to set which parts of the report must be performed\n at the beginning of RBFNN.m\n");
-do_lin_regress=1;           % perform linear regression (section 3.1.1)
+do_lin_regress=0;           % perform linear regression (section 3.1.1)
 do_compare_par_order=0;     % compare different order of parameter training (section 3.2.2) 
 do_optimize_neuron=0;       % find optimal number of neurons (section 3.3)
 do_train_optimal=0;         % train optimal network more extensively
@@ -39,7 +39,7 @@ X_val=X_val';
 %% Linear regression 
 if do_lin_regress
     n=103;
-%     search=1; %search for best performing number of neurons (initial number must be close to optimal)
+     %search for best performing number of neurons (initial number must be close to optimal)
     E_old=inf;
     E=inf-1;
     result=0;
@@ -62,7 +62,7 @@ if do_lin_regress
         Y_train_est=A*a_est;
         NNset_lin.a{k}=a_est; 
 
-        result=calcNNOutput(NNset_lin,X_val);
+        result=simNet(NNset_lin,X_val);
         E=(1/size(Y_val,1))*sum((result.yk'-Y_val).^2);
         NNset_lin_old=NNset_lin;
         n=n+1;
@@ -108,9 +108,11 @@ if do_lin_regress
         ylabel('\beta normalized')
 
         if savef
-             saveas(gcf,strcat('Report/plots/linearNNResi',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.eps'),'epsc')        end
+             saveas(gcf,strcat('Report/plots/linearNNResi',num2str(size(NNset_lin.LW,2)),NNset_lin.init,'.eps'),'epsc')       
         end
-end
+    end
+    end
+
 %% Levenberg Marquard
 NNset=createNNStructure(nrInput,580,nrOutput,inputrange,Networktype,1000,'random');
 NNset.trainalg='trainlm';

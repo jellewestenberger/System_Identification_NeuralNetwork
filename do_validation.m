@@ -70,15 +70,14 @@ end
 
 
 %% Statistical Based Validation
-test=res_val'*res_val;
+
 evar=(res_val'*res_val)/(size(res_val,1)-size(theta_train,1));
 theta_cov=evar*(A_val'*A_val)^(-1);
 theta_var=diag(theta_cov);
 
-%other method
+%other method (for comparison)
 theta_cov2=pinv(A_val) * (res_val * res_val') * A_val * pinv(A_val) / A_val';
 theta_var2=diag(theta_cov2);
-
 
 fontsize=5;
 if plotf
@@ -101,10 +100,9 @@ end
 title(typename,'interpreter','latex','fontsize',fontsize)
 pbaspect([2.5 1 1])
 subplot(122)
-% bar(theta_var)
-% hold on
+
 f=bar(theta_var,'Edgecolor','None');
-%set(gca,'Yscale','log')
+
 xlabel('$i+j$','interpreter','latex','fontsize',fontsize)
 if strcmp(type,'simple')
     xlabel('$i$','interpreter','latex','fontsize',fontsize)
@@ -123,7 +121,7 @@ if savef
 saveas(gcf,strcat('Report/plots/',type,'estimator_vars.eps'),'epsc')
 end
 
-% figure
+
 end
 
 end

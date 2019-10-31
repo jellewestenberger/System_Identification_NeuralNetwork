@@ -16,7 +16,7 @@ a4=load('Data/nnglobalsession865andup.mat');
 a5=load('Data/nnglobalsession1000.mat');
 
 El=a1.El;
-El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El;];
+El=[El;a2.El(6:end,:);a3.El(6:end,:);a4.El;a5.El;]./[1,0.5*neval];
 Elmean=[];
 
 k=0;
@@ -36,15 +36,16 @@ end
 [~,k]=sort(Elmean(:,1));
 Elmean=Elmean(k,:);
 
-figure('Position',[10,10,1200,400]);
+figure('Position',[10,10,700,350]);
 plot(El(:,1),El(:,2),'.')
 hold on 
 plot(Elmean(:,1),Elmean(:,2));
 hold on 
 plot(Elmean(:,1),Elmean(:,2),'.k','markersize',10);
 grid on
-xlabel('Nr neurons')
-ylabel('MSE')
+ylim([min(El(:,2)),max(El(:,2))]);
+xlabel('# neurons')
+ylabel('MSE [-]')
 legend('final MSE single run','Average final MSE');
 if savefl
 saveas(gcf,'Report/plots/nnopti.eps','epsc');
@@ -118,7 +119,7 @@ end
 nsel=Elmeanc(j,1);
 
 
-figure('Position',[10,10,1200,400])
+figure('Position',[10,10,700,350])
 plot(Elc(:,1),Elc(:,2),'.');
 hold on 
 plot(Elmeanc(:,1),Elmeanc(:,2));
@@ -130,11 +131,12 @@ line([nsel,nsel],get(gca,'ylim'))
 hold on 
 plot(Elmeanc(j,1),Elmeanc(j,2),'.g','MarkerSize',20);
 hold on 
-text(1.05*nsel,0.6*minE,strcat(num2str(nsel)," neurons:"));
-text(1.05*nsel,0.4*minE,strcat("Min MSE:",num2str(minE)));
+text(1.05*nsel,0.7*minE,strcat(num2str(nsel)," neurons:"));
+text(1.05*nsel,0.55*minE,strcat("Min MSE:",num2str(minE)));
 grid on
 xlim([min(Elc(:,1)),max(Elc(:,1))]);
-xlabel("neurons");
+ylim([min(Elc(:,2)),max(Elc(:,2))]);
+xlabel("# neurons");
 ylabel("MSE [-]");
 if savefl
 saveas(gcf,"Report/plots/findoptinn.eps",'epsc');
@@ -157,11 +159,11 @@ fr_val=1-fr_train;
 [X_train,X_val,Y_train,Y_val]=splitData([atrue_nom,btrue_nom],Cm,fr_train,fr_val,1);
 X_denom=[atrue,Btrue]'.*(180/pi);
 TRIeval = delaunayn(X_denom');
-nnoutput=calcNNOutput(NNsetf,X);
+nnoutput=simNet(NNsetf,X);
 Cmnn=nnoutput.yk;
 MSE=sum((Cmnn'-Cm).^2)/size(X_denom,2);
-figure('Position',[10,10,1800,600]);
-subplot(131)
+% figure('Position',[10,10,1800,600]);
+figure('Position',[10,10,500,500])
 trisurf(TRIeval,X_denom(1,:),X_denom(2,:),Cm,'edgecolor','none')
 hold on 
 plot3(X_denom(1,:),X_denom(2,:),Cmnn,'.k','MarkerSize',5)
@@ -179,8 +181,10 @@ title('Measured')
 xlabel('\alpha [deg]')
 ylabel('\beta [deg]')
 zlabel('Cm [-]')
-
-subplot(132)
+if savefl
+saveas(gcf,'Report/plots/finalrbfnn1.eps','epsc')
+end
+figure('Position',[10,10,500,500])
 trisurf(TRIeval,X_denom(1,:),X_denom(2,:),Cmnn,'edgecolor','none')
 pbaspect([1,1,1])
 view(135,20)
@@ -195,8 +199,10 @@ title('RBFNN Output')
 xlabel('\alpha [deg]')
 ylabel('\beta [deg]')
 zlabel('Cm [-]')    
-
-subplot(133)
+if savefl
+saveas(gcf,'Report/plots/finalrbfnn2.eps','epsc')
+end
+figure('Position',[10,10,500,500])
 trisurf(TRIeval,X_denom(1,:),X_denom(2,:),(Cmnn'-Cm).^2,'edgecolor','none')
 % plot(Cmnn'-Cm);
 pbaspect([1,1,1])
@@ -213,7 +219,7 @@ xlabel('\alpha [deg]')
 ylabel('\beta [deg]')
 zlabel('Cm [-]^2')    
 if savefl
-saveas(gcf,'Report/plots/finalrbfnn.eps','epsc')
+saveas(gcf,'Report/plots/finalrbfnn3.eps','epsc')
 end
 
 

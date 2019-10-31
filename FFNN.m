@@ -1,5 +1,6 @@
 clear all
 close all
+fprintf("Don't forget to set which parts of the report must be performed\n at the beginning of FFNN.m\n");
 %% Settings
 do_sens_analysis_GD=0; %perform a sensitivty analysis for the error back-propagation algorithm (section 4.1.3)
 do_sens_analysis_LM=0; %perform a sensitivity analysis for the Levenberg-Marquardy algorithm (section 4.2)
@@ -223,7 +224,7 @@ if plotf
     hold off
     xlabel('Evaluations')
     ylabel('MSE [-]')
-    % pbaspect([2,1,1])
+    
     subplot(122)
     for k=1:5
        semilogy(rbfdat.RBFFevl{k},rbfdat.RBFFEl{k}./(0.5*neval))
@@ -237,7 +238,7 @@ if plotf
     hold off
     xlabel('Evaluations')
     ylabel('MSE [-]')
-    % pbaspect([2,1,1])
+   
     if savef
         saveas(gcf,'Report/plots/convcomp.eps','epsc')
     end
@@ -247,10 +248,10 @@ if plotf
     TRIeval = delaunayn(X_nom');
 
     FFbestset=ffdat.FFNNsetmin{ffbest};
-    ffout=calcNNOutput(FFbestset,X_nom);
+    ffout=simNet(FFbestset,X_nom);
 
     RBFbestset=rbfdat.RBFFNNsetmin{rbfbest};
-    rbfout=calcNNOutput(RBFbestset,X_nom);
+    rbfout=simNet(RBFbestset,X_nom);
 
     poly=load('Data/sumorderpolyfull.mat');
     polyout=poly.Afull*poly.theta_sumorder;
@@ -261,7 +262,7 @@ if plotf
     MSErbf=sum((rbfout.yk'-Cm).^2)./size(Cm,1);
     MSEpoly=sum((polyout-Cm).^2)/size(Cm,1);
     figure('Position',[10,10,400,400])
-    % subplot(131)
+    
     trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
     hold on
     plot3(atrue.*180/pi,Btrue.*180/pi,ffout.yk,'.k')
@@ -284,7 +285,7 @@ if plotf
     end
 
     figure('Position',[10,10,400,400])
-    % subplot(132)
+    
     trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
     hold on
     plot3(atrue.*180/pi,Btrue.*180/pi,rbfout.yk,'.k')
@@ -307,7 +308,7 @@ if plotf
     end
 
     figure('Position',[10,10,400,400])
-    % subplot(133)
+    
     trisurf(TRIeval,atrue.*180/pi,Btrue.*180/pi,Cm,'edgecolor','none')
     hold on
     plot3(atrue.*180/pi,Btrue.*180/pi,polyout,'.k')

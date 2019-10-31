@@ -87,7 +87,7 @@ E_train=sum(res_train.^2)/size(res_train,1);
 %% Plot results of different polynomial types
 typenames={'$C_m=\sum_{i=0}^{n} \theta_i\left(\alpha+\beta\right)^i $','$C_m=\sum_{i+j=n}^n \theta_{i,j}\alpha^i\beta^j$','$C_m=\sum_{i,j}^n \theta_{i,j}\alpha^i\beta^j$'};
 if plotf
-figure()
+figure('Position',[10,10,600,200])
 plot([0:size(errl1,1)-1],errl1);
 hold on
 plot([0:size(errl2,1)-1],errl2);

@@ -32,8 +32,8 @@ mu_inc=NNset.trainParam.mu_inc;
 mu_dec=NNset.trainParam.mu_dec;
 mu_max=NNset.trainParam.mu_max;
 trainalg=NNset.trainalg;
-output=calcNNOutput(NNset,X_train); 
-output_val=calcNNOutput(NNset,X_val); 
+output=simNet(NNset,X_train); 
+output_val=simNet(NNset,X_val); 
 ekq=Y_train'-output.yk;
 ekq_val=Y_val'-output_val.yk;
 El=[sum(0.5*ekq_val.^2)];
@@ -117,7 +117,7 @@ while eval<evaltot
                     NNset.b{2}=NNset.b{2}-d;  
                     Curpar= NNset.b{2};
                 end
-                output_val=calcNNOutput(NNset,X_val);
+                output_val=simNet(NNset,X_val);
                 eval=eval+1;
                 ekq_val=Y_val'-output_val.yk;
                 Ek_val=sum(0.5*ekq_val.^2); 
@@ -148,9 +148,9 @@ while eval<evaltot
                 plotfig(output_val,1)
                 if accept
                     NNset_old=NNset;
-                    output_val2=calcNNOutput(NNset,X_val);
+                    output_val2=simNet(NNset,X_val);
                     Ek_val2=sum(0.5*(Y_val'-output_val2.yk).^2);
-                    output=calcNNOutput(NNset,X_train); 
+                    output=simNet(NNset,X_train); 
                     ekq=Y_train'-output.yk; 
                     MSE_train=sum(ekq.^2)/size(ekq,2);
                     MSE_val=sum(ekq_val.^2)/size(ekq_val,2);

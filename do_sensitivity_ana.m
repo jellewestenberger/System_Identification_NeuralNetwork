@@ -16,8 +16,9 @@ trainParam=NNset.trainParam;
 trainalg=NNset.trainalg;
 epochs=trainParam.epochs;
 
+ % the sets correspond to the sets in tables of chapter 4
 %set 1
-rng(50); %fix random seed for honest comparison of sensitivity
+rng(50); %fix random seed for fair comparison of sensitivity
 
 El=[];
 Eprop={};
